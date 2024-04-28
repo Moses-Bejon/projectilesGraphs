@@ -1,0 +1,131 @@
+/* setting defaults for consistency across web browsers*/
+table,label,input,body,tbody,html,div,p{
+    width:100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    overflow-x: hidden;
+}
+#table{
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 30px);
+}
+#fitButtonContainer{
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: 100px;
+}
+.navigationButton{
+    height: 50px;
+    width: 200px;
+    cursor: pointer;
+}
+#inputs{
+    flex-grow: 1;
+    display:flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.entry,.legend{
+    height: 30px;
+    flex-grow: 1;
+
+    display: flex;
+    align-items: flex-start;
+}
+.colourContainer{
+    height: 20px;
+
+    display: flex;
+    align-items: center;
+}
+.colour{
+    height: 5px;
+    width: 60%
+
+
+}
+.blue{
+    background-color:blue;
+}
+.red{
+    background-color:red;
+}
+.green{
+    background-color:green;
+}
+.black{
+    background-color: black;
+}
+.numberInput,.colourContainer{
+    --width:60px;
+    width: var(--width);
+    min-width: var(--width);
+}
+.inputLabel,.label{
+    --width:250px;
+    width:var(--width);
+    min-width:var(--width);
+}
+#banner {
+    height: 30px;
+}
+#taskContentGrid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    width:100%;
+}
+#graph{
+    grid-column: 1;
+    max-height: calc(100vh - 30px);
+    max-width: 50vw;
+    aspect-ratio: 1/1;
+    width: auto;
+    height: auto;
+}
+h4{
+    margin-top:6px;
+    text-align: center;
+}
+
+#blue{
+    background-color: blue;
+}
+#red{
+    background-color: red;
+}
+#black{
+    background-color: black;
+}
+@media (max-width: 800px){
+    #graph{
+        grid-column: auto;
+        grid-row:auto;
+        max-width:none;
+        max-height: none;
+    }
+    #inputs{
+        grid-column: auto;
+        grid-row: auto;
+        min-width: auto;
+    }
+    #taskContentGrid{
+        display:inline;
+    }
+}
+@media (max-height: 650px){
+    .entry,.legend{
+        height: auto;
+    }
+}
+@media (max-height: 350px){
+    .entry,.legend{
+        height: auto;
+    }
+    br{
+        display: none;
+    }
+}
