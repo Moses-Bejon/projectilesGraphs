@@ -1,5 +1,3 @@
-import plot from "./plot.js"
-
 import {
     formatValue,
     toRadians,
@@ -20,249 +18,276 @@ import {
     entryPresets,
     legendPresets,
     homeHTML,
-    taskHTML
+    taskHTML,
+    oneGraphOutput,
+    inProgress
 } from "./dynamicContent.js";
 
 const content = document.getElementById("content")
 
-function loadInto(html, into, callback){
+function loadInto(html, into){
     into.innerHTML = html
-    callback()
 }
 
 // used to enter homescreen and contains behaviour of the home screen
 function home() {
-    loadInto(homeHTML, content, function () {
-        document.getElementById("task1Button").onclick = function () {
-            task(1)
-        }
-        document.getElementById("task2Button").onclick = function () {
-            task(2)
-        }
-        document.getElementById("task3Button").onclick = function () {
-            task(3)
-        }
-        document.getElementById("task4Button").onclick = function () {
-            task(4)
-        }
-    })
+    loadInto(homeHTML, content)
+    document.getElementById("task1Button").onclick = function () {
+        task(1)
+    }
+    document.getElementById("task2Button").onclick = function () {
+        task(2)
+    }
+    document.getElementById("task3Button").onclick = function () {
+        task(3)
+    }
+    document.getElementById("task4Button").onclick = function () {
+        task(4)
+    }
+    document.getElementById("task7Button").onclick = function (){
+        task(7)
+    }
 }
 
 function task(number) {
-    loadInto(taskHTML, content, function () {
-        const inputs = document.getElementById("inputs")
-        const graph = document.getElementById("graph")
+    loadInto(taskHTML, content)
+    const inputs = document.getElementById("inputs")
 
-        function setbuttons() {
-            const fitButton = document.getElementById("fitButton")
-            fitButton.onclick = () => {
-                graph.updateAxes()
-            }
-
-            const homeButton = document.getElementById("homeButton")
-            homeButton.onclick = home
+    function setbuttons() {
+        const fitButton = document.getElementById("fitButton")
+        fitButton.onclick = () => {
+            graph.updateAxes()
         }
-        switch (number) {
-            case 1: {
-                const entries = addEntries(["angle", "g", "u", "h", "timeStep"],[], inputs, updatePlot)
 
-                const angleInput = entries.next().value
-                const gInput = entries.next().value
-                const uInput = entries.next().value
-                const heightInput = entries.next().value
-                const timeStepInput = entries.next().value
+        const homeButton = document.getElementById("homeButton")
+        homeButton.onclick = home
+    }
+    switch (number) {
+        case 1: {
+            loadInto(oneGraphOutput,document.getElementById("output"))
+            const graph = document.getElementById("graph")
 
-                updatePlot()
-                graph.updateAxes()
+            const entries = addEntries(["angle", "g", "u", "h", "timeStep"],[], inputs, updatePlot)
 
-                function updatePlot() {
-                    const angle = toRadians(parseFloat(angleInput.value))
-                    const g = parseFloat(gInput.value)
-                    const u = parseFloat(uInput.value)
-                    const height = parseFloat(heightInput.value)
-                    const timeStep = parseFloat(timeStepInput.value)
+            const angleInput = entries.next().value
+            const gInput = entries.next().value
+            const uInput = entries.next().value
+            const heightInput = entries.next().value
+            const timeStepInput = entries.next().value
 
-                    let vx = horizontalComponent(u, angle)
-                    let vy = verticalComponent(u, angle)
-                    let x = 0
-                    let y = height
+            updatePlot()
+            graph.updateAxes()
 
-                    const points = []
+            function updatePlot() {
+                const angle = toRadians(parseFloat(angleInput.value))
+                const g = parseFloat(gInput.value)
+                const u = parseFloat(uInput.value)
+                const height = parseFloat(heightInput.value)
+                const timeStep = parseFloat(timeStepInput.value)
 
+                let vx = horizontalComponent(u, angle)
+                let vy = verticalComponent(u, angle)
+                let x = 0
+                let y = height
+
+                const points = []
+
+                points.push([x, y])
+                while (y >= 0) {
+                    x += vx * timeStep
+                    vy += 0.5 * -g * timeStep
+                    y += vy * timeStep
+                    vy += 0.5 * -g * timeStep
                     points.push([x, y])
-                    while (y >= 0) {
-                        x += vx * timeStep
-                        vy += 0.5 * -g * timeStep
-                        y += vy * timeStep
-                        vy += 0.5 * -g * timeStep
-                        points.push([x, y])
-                    }
-
-                    graph.clearLinePlotData()
-                    graph.plotLine(points, "black")
                 }
 
-                setbuttons()
-                break
+                graph.clearLinePlotData()
+                graph.plotLine(points, "black")
             }
-            case 2: {
-                const entries = addEntries(["angle", "g", "u", "h"],[], inputs, updatePlot)
 
-                const angleInput = entries.next().value
-                const gInput = entries.next().value
-                const uInput = entries.next().value
-                const heightInput = entries.next().value
-
-                updatePlot()
-                graph.updateAxes()
-
-                function updatePlot() {
-                    const angle = toRadians(parseFloat(angleInput.value))
-                    const g = parseFloat(gInput.value)
-                    const u = parseFloat(uInput.value)
-                    const height = parseFloat(heightInput.value)
-                    const trajectory = getTrajectory(g, u, angle, height)
-
-                    graph.clearLinePlotData()
-                    graph.plotLine(trajectory.points, "black")
-                    graph.clearPointPlotData()
-                    graph.plotPoint(getTrajectoryApogee(g, u, angle, height), "Apogee")
-                }
-
-                setbuttons()
-                break
-            }
-            case 3: {
-                const entries = addEntries(["g", "u", "X", "Y"],["minU","highBall","lowBall","maxX"], inputs, updatePlot)
-
-                const gInput = entries.next().value
-                const uInput = entries.next().value
-                const XInput = entries.next().value
-                const YInput = entries.next().value
-
-
-                const minUAngleLabel = entries.next().value
-                const minULabel = entries.next().value
-                const minULengthLabel = entries.next().value
-                const highBallAngleLabel = entries.next().value
-                const highBallLengthLabel = entries.next().value
-                const lowBallAngleLabel = entries.next().value
-                const lowBallLengthLabel = entries.next().value
-                const maxAngleLabel = entries.next().value
-                const maxDistanceLabel = entries.next().value
-                const maxLengthLabel = entries.next().value
-
-                updatePlot()
-                graph.updateAxes()
-
-                function updatePlot() {
-                    const g = parseFloat(gInput.value)
-                    const u = parseFloat(uInput.value)
-                    const X = parseFloat(XInput.value)
-                    const Y = parseFloat(YInput.value)
-
-                    const angleLow = Math.atan(quadraticFormulaNegative(g * X ** 2, -2 * u ** 2 * X, 2 * u ** 2 * Y + g * X ** 2))
-                    const angleHigh = Math.atan(quadraticFormulaPositive(g * X ** 2, -2 * u ** 2 * X, 2 * u ** 2 * Y + g * X ** 2))
-
-                    const minU = Math.sqrt(g * Y + g * Math.sqrt(Y ** 2 + X ** 2))
-                    const minUAngle = Math.atan((Y + Math.sqrt(Y ** 2 + X ** 2)) / X)
-
-                    const maxDistance = u ** 2 / g
-                    const maxAngle = Math.PI / 4
-
-                    graph.clearLinePlotData()
-
-                    if (isNaN(angleLow)) {
-                        highBallAngleLabel.innerHTML = "N/A"
-                        lowBallAngleLabel.innerHTML = "N/A"
-                    } else {
-                        const lowBallTrajectory = getTrajectory(g, u, angleLow, 0)
-                        const highBallTrajectory = getTrajectory(g, u, angleHigh, 0)
-
-                        highBallAngleLabel.innerHTML = formatValue(toDegrees(angleHigh), 4) + "º"
-                        lowBallAngleLabel.innerHTML = formatValue(toDegrees(angleLow), 4) + "º"
-                        highBallLengthLabel.innerHTML = formatValue(highBallTrajectory.length,4) + "m"
-                        lowBallLengthLabel.innerHTML = formatValue(lowBallTrajectory.length,4)+"m"
-
-                        graph.plotLine(lowBallTrajectory.points, "green")
-                        graph.plotLine(highBallTrajectory.points, "blue")
-                    }
-
-                    const xStepForBoundary = (u ** 2 / g) * (1/resolution)
-                    const boundaryPoints = []
-                    for (let i = 0; i <= resolution; i++) {
-                        const x = i * xStepForBoundary
-                        const y = (u ** 4 - (g * x) ** 2) / (2 * u ** 2 * g)
-                        boundaryPoints.push([x, y])
-                    }
-
-                    const minUTrajectory = getTrajectory(g, minU, minUAngle, 0)
-                    const maxDistanceTrajectory = getTrajectory(g, u, maxAngle, 0)
-
-                    minUAngleLabel.innerHTML = formatValue(toDegrees(minUAngle), 4)
-                    minULabel.innerHTML = formatValue(minU, 4)
-                    minULengthLabel.innerHTML = formatValue(minUTrajectory.length,4)
-                    maxAngleLabel.innerHTML = formatValue(toDegrees(maxAngle),4)
-                    maxDistanceLabel.innerHTML = formatValue(maxDistance,4)
-                    maxLengthLabel.innerHTML = formatValue(maxDistanceTrajectory.length,4)
-
-                    graph.plotLine(minUTrajectory.points, "black")
-                    graph.plotLine(maxDistanceTrajectory.points,"red")
-                    graph.plotLine(boundaryPoints, "purple")
-
-                    graph.clearPointPlotData()
-                    graph.plotPoint([X, Y], "Target")
-                }
-
-                setbuttons()
-                break
-            }
-            case 4: {
-                const entries = addEntries(["angle", "g", "u", "h"],["inputX","maxX"], inputs, updatePlot)
-                const angleInput = entries.next().value
-                const gInput = entries.next().value
-                const uInput = entries.next().value
-                const heightInput = entries.next().value
-
-                const distanceLabel = entries.next().value
-                const lengthLabel = entries.next().value
-                const maxAngleLabel = entries.next().value
-                const maxDistanceLabel = entries.next().value
-                const maxLengthLabel = entries.next().value
-
-                updatePlot()
-                graph.updateAxes()
-
-                function updatePlot() {
-                    const angle = toRadians(parseFloat(angleInput.value))
-                    const g = parseFloat(gInput.value)
-                    const u = parseFloat(uInput.value)
-                    const height = parseFloat(heightInput.value)
-
-                    const trajectory = getTrajectory(g, u, angle, height)
-                    const distance = trajectory.points[trajectory.points.length - 1][0]
-                    const maxDistance = u * Math.sqrt(2 * height * g + u ** 2) / g
-                    const maxAngle = Math.atan(u / (Math.sqrt(2 * height * g + u ** 2)))
-                    const maxDistanceTrajectory = getTrajectory(g, u, maxAngle, height)
-
-                    distanceLabel.innerHTML = formatValue(distance, 4)
-                    lengthLabel.innerHTML = formatValue(trajectory.length,4)
-                    maxDistanceLabel.innerHTML = formatValue(maxDistance, 4)
-                    maxAngleLabel.innerHTML = formatValue(toDegrees(maxAngle), 4)
-                    maxLengthLabel.innerHTML = formatValue(maxDistanceTrajectory.length,4)
-
-                    graph.clearLinePlotData()
-                    graph.plotLine(trajectory.points, "black")
-                    graph.plotLine(maxDistanceTrajectory.points,"red")
-
-
-                }
-
-                setbuttons()
-                break
-            }
+            setbuttons()
+            break
         }
-    })
+        case 2: {
+            loadInto(oneGraphOutput,document.getElementById("output"))
+            const graph = document.getElementById("graph")
+
+            const entries = addEntries(["angle", "g", "u", "h"],[], inputs, updatePlot)
+
+            const angleInput = entries.next().value
+            const gInput = entries.next().value
+            const uInput = entries.next().value
+            const heightInput = entries.next().value
+
+            updatePlot()
+            graph.updateAxes()
+
+            function updatePlot() {
+                const angle = toRadians(parseFloat(angleInput.value))
+                const g = parseFloat(gInput.value)
+                const u = parseFloat(uInput.value)
+                const height = parseFloat(heightInput.value)
+                const trajectory = getTrajectory(g, u, angle, height)
+
+                graph.clearLinePlotData()
+                graph.plotLine(trajectory.points, "black")
+                graph.clearPointPlotData()
+                graph.plotPoint(getTrajectoryApogee(g, u, angle, height), "Apogee")
+            }
+
+            setbuttons()
+            break
+        }
+        case 3: {
+            loadInto(oneGraphOutput,document.getElementById("output"))
+            const graph = document.getElementById("graph")
+
+            const entries = addEntries(["g", "u", "X", "Y"],["minU","highBall","lowBall","maxX"], inputs, updatePlot)
+
+            const gInput = entries.next().value
+            const uInput = entries.next().value
+            const XInput = entries.next().value
+            const YInput = entries.next().value
+
+
+            const minUAngleLabel = entries.next().value
+            const minULabel = entries.next().value
+            const minULengthLabel = entries.next().value
+            const highBallAngleLabel = entries.next().value
+            const highBallLengthLabel = entries.next().value
+            const lowBallAngleLabel = entries.next().value
+            const lowBallLengthLabel = entries.next().value
+            const maxAngleLabel = entries.next().value
+            const maxDistanceLabel = entries.next().value
+            const maxLengthLabel = entries.next().value
+
+            updatePlot()
+            graph.updateAxes()
+
+            function updatePlot() {
+                const g = parseFloat(gInput.value)
+                const u = parseFloat(uInput.value)
+                const X = parseFloat(XInput.value)
+                const Y = parseFloat(YInput.value)
+
+                const angleLow = Math.atan(quadraticFormulaNegative(g * X ** 2, -2 * u ** 2 * X, 2 * u ** 2 * Y + g * X ** 2))
+                const angleHigh = Math.atan(quadraticFormulaPositive(g * X ** 2, -2 * u ** 2 * X, 2 * u ** 2 * Y + g * X ** 2))
+
+                const minU = Math.sqrt(g * Y + g * Math.sqrt(Y ** 2 + X ** 2))
+                const minUAngle = Math.atan((Y + Math.sqrt(Y ** 2 + X ** 2)) / X)
+
+                const maxDistance = u ** 2 / g
+                const maxAngle = Math.PI / 4
+
+                graph.clearLinePlotData()
+
+                if (isNaN(angleLow)) {
+                    highBallAngleLabel.innerHTML = "N/A"
+                    lowBallAngleLabel.innerHTML = "N/A"
+                } else {
+                    const lowBallTrajectory = getTrajectory(g, u, angleLow, 0)
+                    const highBallTrajectory = getTrajectory(g, u, angleHigh, 0)
+
+                    highBallAngleLabel.innerHTML = formatValue(toDegrees(angleHigh), 4) + "º"
+                    lowBallAngleLabel.innerHTML = formatValue(toDegrees(angleLow), 4) + "º"
+                    highBallLengthLabel.innerHTML = formatValue(highBallTrajectory.length,4) + "m"
+                    lowBallLengthLabel.innerHTML = formatValue(lowBallTrajectory.length,4)+"m"
+
+                    graph.plotLine(lowBallTrajectory.points, "green")
+                    graph.plotLine(highBallTrajectory.points, "blue")
+                }
+
+                const xStepForBoundary = (u ** 2 / g) * (1/resolution)
+                const boundaryPoints = []
+                for (let i = 0; i <= resolution; i++) {
+                    const x = i * xStepForBoundary
+                    const y = (u ** 4 - (g * x) ** 2) / (2 * u ** 2 * g)
+                    boundaryPoints.push([x, y])
+                }
+
+                const minUTrajectory = getTrajectory(g, minU, minUAngle, 0)
+                const maxDistanceTrajectory = getTrajectory(g, u, maxAngle, 0)
+
+                minUAngleLabel.innerHTML = formatValue(toDegrees(minUAngle), 4)
+                minULabel.innerHTML = formatValue(minU, 4)
+                minULengthLabel.innerHTML = formatValue(minUTrajectory.length,4)
+                maxAngleLabel.innerHTML = formatValue(toDegrees(maxAngle),4)
+                maxDistanceLabel.innerHTML = formatValue(maxDistance,4)
+                maxLengthLabel.innerHTML = formatValue(maxDistanceTrajectory.length,4)
+
+                graph.plotLine(minUTrajectory.points, "black")
+                graph.plotLine(maxDistanceTrajectory.points,"red")
+                graph.plotLine(boundaryPoints, "purple")
+
+                graph.clearPointPlotData()
+                graph.plotPoint([X, Y], "Target")
+            }
+
+            setbuttons()
+            break
+        }
+        case 4: {
+            loadInto(oneGraphOutput,document.getElementById("output"))
+            const graph = document.getElementById("graph")
+
+            const entries = addEntries(["angle", "g", "u", "h"],["inputX","maxX"], inputs, updatePlot)
+            const angleInput = entries.next().value
+            const gInput = entries.next().value
+            const uInput = entries.next().value
+            const heightInput = entries.next().value
+
+            const distanceLabel = entries.next().value
+            const lengthLabel = entries.next().value
+            const maxAngleLabel = entries.next().value
+            const maxDistanceLabel = entries.next().value
+            const maxLengthLabel = entries.next().value
+
+            updatePlot()
+            graph.updateAxes()
+
+            function updatePlot() {
+                const angle = toRadians(parseFloat(angleInput.value))
+                const g = parseFloat(gInput.value)
+                const u = parseFloat(uInput.value)
+                const height = parseFloat(heightInput.value)
+
+                const trajectory = getTrajectory(g, u, angle, height)
+                const distance = trajectory.points[trajectory.points.length - 1][0]
+                const maxDistance = u * Math.sqrt(2 * height * g + u ** 2) / g
+                const maxAngle = Math.atan(u / (Math.sqrt(2 * height * g + u ** 2)))
+                const maxDistanceTrajectory = getTrajectory(g, u, maxAngle, height)
+
+                distanceLabel.innerHTML = formatValue(distance, 4)
+                lengthLabel.innerHTML = formatValue(trajectory.length,4)
+                maxDistanceLabel.innerHTML = formatValue(maxDistance, 4)
+                maxAngleLabel.innerHTML = formatValue(toDegrees(maxAngle), 4)
+                maxLengthLabel.innerHTML = formatValue(maxDistanceTrajectory.length,4)
+
+                graph.clearLinePlotData()
+                graph.plotLine(trajectory.points, "black")
+                graph.plotLine(maxDistanceTrajectory.points,"red")
+
+
+            }
+
+            setbuttons()
+            break
+        }
+        case 7:
+            loadInto(inProgress,document.getElementById("output"))
+
+            const entries = addEntries(["g","u","h","angle"],[],inputs,updatePlot)
+            const gInput = entries.next().value
+            const uInput = entries.next().value
+            const hInput = entries.next().value
+            const angleInput = entries.next().value
+
+            function updatePlot(){
+            }
+
+            setbuttons()
+            break
+    }
 }
 
 function* addEntries(entries,legends,into,updatePlot){
