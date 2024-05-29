@@ -25,7 +25,7 @@ export const homeHTML = `
 `
 export const taskHTML = `
 <div id="taskContentGrid">
-    <graph-component id="graph"></graph-component>
+    <div id="output"></div>
     <div id="table">
         <div id="inputs"></div>
         <div>
@@ -37,6 +37,20 @@ export const taskHTML = `
     </div>
 </div>
 `
+
+export const oneGraphOutput = `
+<graph-component id="graph"></graph-component>
+`
+
+export const twoGGraphOutput = `
+<graph-component id="graph1"></graph-component>
+<graph-component id="graph2"></graph-component>
+`
+
+export const inProgress = `
+This feature/page is currently under construction
+`
+
 
 export const task7HTML = `
 
