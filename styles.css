@@ -78,14 +78,28 @@ table,label,input,body,tbody,html,div,p{
     grid-template-columns: 1fr 1fr;
     width:100%;
 }
-#graph{
-    grid-column: 1;
-    max-height: calc(100vh - 30px);
-    max-width: 50vw;
-    aspect-ratio: 1/1;
-    width: auto;
-    height: auto;
+
+#output{
+    display: flex;
 }
+
+#graph,.outputContainer{
+    grid-column: 1;
+    flex-grow: 1;
+}
+
+.outputContainer{
+    display: flex;
+}
+
+graph-component{
+    flex-grow: 1;
+}
+
+#grid1,#grid2{
+    flex-grow: 1;
+}
+
 h4{
     margin-top:6px;
     text-align: center;
@@ -100,12 +114,12 @@ h4{
 #black{
     background-color: black;
 }
+
+
 @media (max-width: 800px){
-    #graph{
+    #graph,.outputContainer{
         grid-column: auto;
         grid-row:auto;
-        max-width:none;
-        max-height: none;
     }
     #inputs{
         grid-column: auto;
