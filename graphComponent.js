@@ -243,7 +243,7 @@ export class graph extends HTMLElement {
         // Create a download link
         const downloadLink = document.createElement('a');
         downloadLink.href = videoUrl;
-        downloadLink.download = 'video.mp4';
+        downloadLink.download = 'bouncingProjectile.mp4';
 
         // Trigger the download automatically
         downloadLink.click();
