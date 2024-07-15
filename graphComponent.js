@@ -2,7 +2,7 @@ import {
     formatValue,
 } from "./maths.js";
 
-import { Muxer, ArrayBufferTarget } from './node_modules/mp4-muxer/build/mp4-muxer.mjs';
+import { Muxer, ArrayBufferTarget } from './mp4-muxer.mjs';
 
 const serializer = new XMLSerializer()
 const DOMURL = self.URL || self.webkitURL || self;
