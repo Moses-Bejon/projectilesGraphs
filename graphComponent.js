@@ -224,7 +224,7 @@ export class graph extends HTMLElement {
         const timePerTimestamp = Math.round(1000000/fps)
         timeStep = timeStep*1000
         const lineToAnimate = this.linePlots[0]
-        const numberOfFrames = Math.trunc(lineToAnimate.points.length*timeStep/timePerFrame)
+        const numberOfFrames = Math.trunc((lineToAnimate.points.length-1)*timeStep/timePerFrame)
 
         for (let i = 0; i<numberOfFrames;i++){
 
