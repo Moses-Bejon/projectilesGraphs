@@ -2,6 +2,12 @@ import {
     formatValue,
 } from "./maths.js";
 
+import { Muxer, ArrayBufferTarget } from './node_modules/mp4-muxer/build/mp4-muxer.mjs';
+
+const serializer = new XMLSerializer()
+const DOMURL = self.URL || self.webkitURL || self;
+const frame = new Image()
+
 const template = document.createElement("template")
 template.innerHTML=`
 <style>
@@ -49,40 +55,38 @@ template.innerHTML=`
     padding: 0;
     margin: 0;
 }
-
-.gridLine{
-    stroke: gray;
-    stroke-width: 0.001;
-}
-
 .labelLine{
     stroke: black;
     stroke-width: 0.002
 }
-path{
-    stroke-width:0.005;
-    fill:none;
-    stroke:black;
-}
 </style>
 <div id="graphContainer">
     <div id="yaxisContainer">
-        <p class="axisLabel" id="yaxisLabel">y (m)</p>
+        <p class="axisLabel" id="yaxisLabel"></p>
         <div id="yaxis"></div>
     </div>
-    <svg id="canvas" viewBox="0 0 1 1"></svg>
+    <svg id="canvas" viewBox="0 0 1 1"><rect x="0" y="0" width="1" height="1" style="stroke: #FFFFFF;"></rect></svg>
     <div id="xaxisContainer">
         <div id="xaxis"></div>
-        <p class="axisLabel" id="xaxisLabel">x (m)</p>
+        <p class="axisLabel" id="xaxisLabel"></p>
     </div>
 </div>
 `
 
-class graph extends HTMLElement {
-    static observedAttributes = ["yaxisLabel","xaxisLabel"]
+export class graph extends HTMLElement {
+    static observedAttributes = ["yaxislabel","xaxislabel"]
 
     constructor() {
         super()
+        this.yaxisLabel = "y (m)"
+        this.xaxisLabel = "x (m)"
+        this.requestedAnimationFrame = null
+
+        this.linePlots = []
+        this.pointPlots = []
+
+        this.top = 50
+        this.right = 50
     }
 
     connectedCallback(){
@@ -92,14 +96,12 @@ class graph extends HTMLElement {
         this.canvas = this.shadowRoot.getElementById("canvas")
         this.yaxis = this.shadowRoot.getElementById("yaxis")
         this.xaxis = this.shadowRoot.getElementById("xaxis")
-        this.yaxisLabel = this.shadowRoot.getElementById("yaxisLabel")
-        this.xaxisLabel = this.shadowRoot.getElementById("xaxisLabel")
+        this.shadowRoot.getElementById("yaxisLabel").innerText = this.yaxisLabel
+        this.shadowRoot.getElementById("xaxisLabel").innerText = this.xaxisLabel
+    }
 
-        this.linePlots = []
-        this.pointPlots = []
-
-        this.top = 50
-        this.right = 50
+    disconnectedCallback(){
+        this.cancelAnimation()
     }
 
     plotLine(points, colour) {
@@ -107,8 +109,20 @@ class graph extends HTMLElement {
         this.drawLine(points, colour)
     }
 
+    drawGraph(){
+        this.linePlots.forEach((data) => {
+            this.drawLine(data["points"], data["colour"])
+        })
+        this.pointPlots.forEach((data) => {
+            this.drawPoint(data["point"], data["label"])
+        })
+    }
+
     drawLine(points, colour) {
-        let path = "<path id=\"linePlot\" style='stroke:" + colour + "' d=\"M " + String(points[0][0] / this.right) + " " + String(1 - points[0][1] / this.top)
+        let path = `<path style="stroke:${colour};
+        stroke-width:0.005;
+        fill:none;" 
+        d=\"M ${String(points[0][0] / this.right)} ${String(1 - points[0][1] / this.top)}`
         for (let i = 1; i < points.length; i++) {
             path += " L " + String(points[i][0] / this.right) + " " + String(1 - points[i][1] / this.top)
         }
@@ -118,12 +132,159 @@ class graph extends HTMLElement {
 
     }
 
+    animateFirstLine(timeStep){
+
+        this.cancelAnimation()
+
+        // user enters data in seconds whereas performance.now uses milliseconds
+        timeStep = timeStep*1000
+
+        const lineToAnimate = this.linePlots[0]
+
+        // clear graph
+        this.clearLinePlots()
+        this.clearPointPlots()
+
+        const timeBegan = performance.now()
+        const timeLength = (lineToAnimate.points.length-1)*timeStep
+
+        this.updateAnimation(timeBegan,timeLength,timeStep,lineToAnimate)
+
+        this.clearLinePlots()
+        this.drawGraph()
+    }
+
+    updateAnimation(timeBegan,timeLength,timeStep,lineToAnimate){
+        const time = performance.now()-timeBegan
+
+        if (time>=timeLength){
+            return
+        }
+
+        this.goToTime(time,timeStep,lineToAnimate)
+
+        this.requestedAnimationFrame = requestAnimationFrame(()=>{
+            this.updateAnimation(timeBegan,timeLength,timeStep,lineToAnimate)
+        })
+
+    }
+
+    goToTime(time,timeStep,line){
+        const frame = Math.trunc(time/timeStep)
+        const subFrame = (time%timeStep)/timeStep
+
+        const pointsToPlot = line.points.slice(0,frame+1)
+        const currentPoint = line.points[frame]
+        const nextPoint = line.points[frame+1]
+        const subX = currentPoint[0]+subFrame*(nextPoint[0]-currentPoint[0])
+        const subY = currentPoint[1]+subFrame*(nextPoint[1]-currentPoint[1])
+        pointsToPlot.push([subX,subY])
+
+        this.clearLinePlots()
+
+        if (pointsToPlot.length>0) {
+            this.drawLine(pointsToPlot, line.colour)
+        }
+    }
+
+    cancelAnimation(){
+        if (!(this.requestedAnimationFrame == null)) {
+            cancelAnimationFrame(this.requestedAnimationFrame)
+            this.requestedAnimationFrame = null
+        }
+    }
+
+    async saveFirstLine(timeStep,fps){
+        this.cancelAnimation()
+        this.clearLinePlots()
+        this.clearPointPlots()
+
+        let muxer = new Muxer({
+            target: new ArrayBufferTarget(),
+            video: {
+                codec: 'avc',
+                width: 500,
+                height: 500
+            },
+            fastStart: 'in-memory'
+        });
+
+        this.videoEncoder = new VideoEncoder({
+            output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+            error: e => console.error(e)
+        });
+        this.videoEncoder.configure({
+            codec: 'avc1.42001f',
+            width: 500,
+            height: 500,
+            bitrate: 1e6
+        });
+
+        const timePerFrame = 1000/fps
+        const timePerTimestamp = Math.round(1000000/fps)
+        timeStep = timeStep*1000
+        const lineToAnimate = this.linePlots[0]
+        const numberOfFrames = Math.trunc(lineToAnimate.points.length*timeStep/timePerFrame)
+
+        for (let i = 0; i<numberOfFrames;i++){
+
+            this.goToTime(i*timePerFrame,timeStep,lineToAnimate)
+
+            await this.captureFrame(timePerTimestamp*i,timePerTimestamp)
+        }
+
+        await this.videoEncoder.flush();
+        muxer.finalize();
+
+        let { buffer } = muxer.target; // Buffer contains final MP4 file
+
+        const videoUrl = URL.createObjectURL(new Blob([buffer], { type: 'video/mp4' }));
+
+        // Create a download link
+        const downloadLink = document.createElement('a');
+        downloadLink.href = videoUrl;
+        downloadLink.download = 'video.mp4';
+
+        // Trigger the download automatically
+        downloadLink.click();
+
+    }
+
+    async captureFrame(timeStamp,duration){
+
+        // fun fact, it's actually faster to recreate the canvas each time from scratch than it is to clone the node
+        const canvas = document.createElement("canvas")
+        canvas.width = 1000
+        canvas.height = 1000
+        const ctx = canvas.getContext("2d")
+
+        const svgString = serializer.serializeToString(this.canvas)
+
+        const svgBinary = new Blob([svgString],{type:"image/svg+xml;charset=utf-8"})
+        const svgURL = DOMURL.createObjectURL(svgBinary)
+
+        frame.src = svgURL
+
+        return new Promise((resolve) => {
+            frame.onload = () => {
+                ctx.drawImage(frame,0,0)
+
+                const videoFrame = new VideoFrame(canvas, { timestamp: timeStamp, duration: duration, alpha: "keep"})
+                this.videoEncoder.encode(videoFrame)
+                videoFrame.close()
+
+                resolve()
+            }
+        })
+
+    }
+
     plotPoint(point, label) {
         this.pointPlots.push({point: point, label: label})
         this.drawPoint(point, label)
     }
 
-    drawPoint(point, label) {
+    drawPoint(point, label){
         const xPoint = point[0] / this.right
         const yPoint = 1 - point[1] / this.top
 
@@ -153,18 +314,23 @@ class graph extends HTMLElement {
         this.canvas.innerHTML += "<text text-anchor='" + textAnchor + "' font-size='0.03px' class='pointLabel' x='" + String(xLabel) + "' y='" + yLabel + "' >" + label + " (" + formatValue(point[0], 4) + "," + formatValue(point[1], 4) + ")</text>"
 
     }
+
+    // while the structure of this function means it won't work when javascript modifies the attribute
+    // I can't even seem to get the function to fire when javascript does this so, maybe a problem for future me
     attributeChangedCallback(name,oldValue,newValue){
         switch (name){
-            case "yaxisLabel":
-                this.yaxisLabel.innerText = newValue
+            case "yaxislabel":
+                this.yaxisLabel = newValue
                 break
-            case "xaxisLabel":
-                this.xaxisLabel.innerText = newValue
+            case "xaxislabel":
+                this.xaxisLabel = newValue
                 break
         }
     }
 
     updateAxes() {
+        this.cancelAnimation()
+
         this.clearGridLines()
         this.clearLinePlots()
         this.clearPointPlots()
@@ -217,7 +383,7 @@ class graph extends HTMLElement {
                 axisValues += "<p class='yaxisValue' style='bottom: " + String(100 * y / this.top) + "%'>" + formatValue(y) + "</p>"
             }
 
-            this.canvas.innerHTML += "<line class='gridLine' x1='0' y1='" + String(1 - y / this.top) + "' x2='1' y2='" + String(1 - y / this.top) + "'>"
+            this.canvas.innerHTML += "<line class='gridLine' style='stroke: gray; stroke-width: 0.001;' x1='0' y1='" + String(1 - y / this.top) + "' x2='1' y2='" + String(1 - y / this.top) + "'>"
             y += yStep
             counter++
         }
@@ -247,7 +413,7 @@ class graph extends HTMLElement {
             if (counter % plotPeriod === 0 && x < this.right - xStep * plotPeriod) {
                 axisValues += "<p class='xaxisValue' style='left: " + String(100 * x / this.right) + "%'>" + formatValue(x) + "</p>"
             }
-            this.canvas.innerHTML += "<line class='gridLine' x1='" + String(x / this.right) + "' y1='0' x2='" + String(x / this.right) + "' y2='1'>"
+            this.canvas.innerHTML += "<line class='gridLine' style='stroke: gray; stroke-width: 0.001;' x1='" + String(x / this.right) + "' y1='0' x2='" + String(x / this.right) + "' y2='1'>"
 
             x += xStep
             counter++
@@ -255,12 +421,7 @@ class graph extends HTMLElement {
 
         this.xaxis.innerHTML = axisValues
 
-        this.linePlots.forEach((data) => {
-            this.drawLine(data["points"], data["colour"])
-        })
-        this.pointPlots.forEach((data) => {
-            this.drawPoint(data["point"], data["label"])
-        })
+        this.drawGraph()
     }
 
     clearLinePlots() {
@@ -270,7 +431,7 @@ class graph extends HTMLElement {
         })
     }
 
-    clearPointPlots() {
+    clearPointPlots(){
         const points = this.canvas.querySelectorAll("circle")
         points.forEach((point) => {
             point.remove()
