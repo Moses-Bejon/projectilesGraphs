@@ -5,7 +5,7 @@ import {
     horizontalComponent,
     verticalComponent,
     quadraticFormulaPositive,
-    quadraticFormulaNegative
+    quadraticFormulaNegative, cubicFormula
 } from "./maths.js"
 
 import {
@@ -19,7 +19,8 @@ import {
     legendPresets,
     homeHTML,
     taskHTML,
-    oneGraphOutput,
+    xyGraph,
+    trGraph,
     inProgress
 } from "./dynamicContent.js";
 
@@ -47,6 +48,12 @@ function home() {
     document.getElementById("task7Button").onclick = function (){
         task(7)
     }
+    document.getElementById("task8Button").onclick = function (){
+        task(8)
+    }
+    document.getElementById("task9Button").onclick = function (){
+        task(9)
+    }
 }
 
 function task(number) {
@@ -64,7 +71,7 @@ function task(number) {
     }
     switch (number) {
         case 1: {
-            loadInto(oneGraphOutput,document.getElementById("output"))
+            loadInto(xyGraph,document.getElementById("output"))
             const graph = document.getElementById("graph")
 
             const entries = addEntries(["angle", "g", "u", "h", "timeStep"],[], inputs, updatePlot)
@@ -109,7 +116,7 @@ function task(number) {
             break
         }
         case 2: {
-            loadInto(oneGraphOutput,document.getElementById("output"))
+            loadInto(xyGraph,document.getElementById("output"))
             const graph = document.getElementById("graph")
 
             const entries = addEntries(["angle", "g", "u", "h"],[], inputs, updatePlot)
@@ -139,7 +146,7 @@ function task(number) {
             break
         }
         case 3: {
-            loadInto(oneGraphOutput,document.getElementById("output"))
+            loadInto(xyGraph,document.getElementById("output"))
             const graph = document.getElementById("graph")
 
             const entries = addEntries(["g", "u", "X", "Y"],["minU","highBall","lowBall","maxX"], inputs, updatePlot)
@@ -227,7 +234,7 @@ function task(number) {
             break
         }
         case 4: {
-            loadInto(oneGraphOutput,document.getElementById("output"))
+            loadInto(xyGraph,document.getElementById("output"))
             const graph = document.getElementById("graph")
 
             const entries = addEntries(["angle", "g", "u", "h"],["inputX","maxX"], inputs, updatePlot)
@@ -273,27 +280,272 @@ function task(number) {
             setbuttons()
             break
         }
-        case 7:
-            loadInto(inProgress,document.getElementById("output"))
+        case 7: {
+            loadInto(trGraph, document.getElementById("output"))
+            const graph = document.getElementById("graph")
 
-            const entries = addEntries(["g","u","h","angle"],[],inputs,updatePlot)
+            const entries = addEntries(["g", "u", "h", "angle"], ["turningPoints"], inputs, updatePlot)
             const gInput = entries.next().value
             const uInput = entries.next().value
-            const hInput = entries.next().value
+            const heightInput = entries.next().value
             const angleInput = entries.next().value
 
-            function updatePlot(){
+            const turningPointsLabel = entries.next().value
+
+
+            updatePlot()
+            graph.updateAxes()
+
+            function updatePlot() {
+                const angle = toRadians(parseFloat(angleInput.value))
+                const g = parseFloat(gInput.value)
+                const u = parseFloat(uInput.value)
+                const height = parseFloat(heightInput.value)
+
+                const vx = horizontalComponent(u, angle)
+                const vy = verticalComponent(u, angle)
+
+                const lastT = 1.2 * (vy + Math.sqrt(vy ** 2 + 2 * g * height)) / g
+                const Tstep = lastT / resolution
+                const points = []
+
+                for (let i = 0; i <= resolution; i++) {
+                    const T = Tstep * i
+                    points.push([T, Math.sqrt((vx * T) ** 2 + (height + vy * T - 0.5 * g * T ** 2) ** 2)])
+                }
+
+                const Tturning = cubicFormula(g ** 2, -3 * g * vy, 2 * (vx ** 2 + vy ** 2 - g * height), 2 * vy * height)
+                const turningPoints = []
+                let turningPointsInfo = ""
+
+                Tturning.forEach((complex) => {
+                    if (complex.a > 0.0001 && complex.b < 0.0001 && complex.b > -0.0001) {
+                        const x = vx * complex.a
+                        const y = height + vy * complex.a - 0.5 * g * complex.a ** 2
+                        turningPointsInfo += "(" + formatValue(x, 4) + "," + formatValue(y, 4) + ") "
+                        turningPoints.push([complex.a, Math.sqrt(x ** 2 + y ** 2)])
+                    }
+                })
+
+                if (turningPointsInfo === "") {
+                    turningPointsLabel.innerText = "no positive real turning points"
+                } else {
+                    turningPointsLabel.innerText = turningPointsInfo
+                }
+
+                graph.clearLinePlotData()
+                graph.plotLine(points, "black")
+
+                graph.clearPointPlotData()
+                turningPoints.forEach((turningPoint) => {
+                    graph.plotPoint(turningPoint, "Turning point")
+                })
+
             }
 
             setbuttons()
             break
+        }
+
+
+        case 8: {
+            loadInto(xyGraph, document.getElementById("output"))
+
+            const graph = document.getElementById("graph")
+
+            const entries = addEntries(["g", "u", "h", "angle","N","C","timeStep"],[], inputs, updatePlot)
+            const gInput = entries.next().value
+            const uInput = entries.next().value
+            const heightInput = entries.next().value
+            const angleInput = entries.next().value
+            const NInput = entries.next().value
+            const CInput = entries.next().value
+            const timeStepInput = entries.next().value
+
+            const playButton = document.createElement("button")
+            playButton.id = "playButton"
+            playButton.className = "navigationButton"
+            playButton.innerText = "Play animation"
+
+            const saveButton = document.createElement("button")
+            saveButton.id = "saveButton"
+            saveButton.className = "navigationButton"
+            saveButton.innerText = "Save animation as mp4"
+
+            updatePlot()
+            graph.updateAxes()
+
+            function moveProjectileThroughTimePeriod(g,position,vx,vy,C,bounces,N,time){
+
+                let [x,y] = position
+
+                const nexty = y + vy*time - 0.5*g*time**2
+
+                if (nexty<0){
+                    bounces += 1
+                    if (bounces > N){
+                        return false
+                    }
+
+                    const t = (vy+Math.sqrt(vy**2+2*g*y))/g
+
+                    x+=vx*t
+                    y=0
+                    vy = -1*C*(vy-g*t)
+
+                    return moveProjectileThroughTimePeriod(g,[x,y],vx,vy,C,bounces,N,time-t)
+                }
+
+                x += vx*time
+                vy -= g*time
+
+                return [[x,nexty],vy,bounces]
+
+            }
+
+            function updatePlot() {
+                graph.cancelAnimation()
+
+                const angle = toRadians(parseFloat(angleInput.value))
+                const g = parseFloat(gInput.value)
+                const u = parseFloat(uInput.value)
+                const height = parseFloat(heightInput.value)
+                const N = parseInt(NInput.value)
+                const C = parseFloat(CInput.value)
+                const timeStep = parseFloat(timeStepInput.value)
+
+                let position = [0,height]
+                const vx = horizontalComponent(u, angle)
+                let vy = verticalComponent(u, angle)
+
+                const points = [position]
+
+                let bounces = 0
+
+                while (true){
+                    const movement = moveProjectileThroughTimePeriod(g,position,vx,vy,C,bounces,N,timeStep)
+
+                    if (!movement){
+                        break
+                    }
+                    [position,vy,bounces] = movement
+                    points.push(position)
+
+                }
+
+                graph.clearLinePlotData()
+                graph.plotLine(points, "black")
+
+                playButton.onclick = () => {graph.animateFirstLine(timeStep)}
+                saveButton.onclick = () => {
+                    saveButton.innerText = "Saving animation..."
+                    graph.saveFirstLine(timeStep,30).then(()=>{
+                        saveButton.innerText = "Save animation as mp4"
+                    })
+                }
+
+            }
+
+            const buttonContainer = document.getElementById("fitButtonContainer")
+
+            buttonContainer.appendChild(playButton)
+            buttonContainer.appendChild(saveButton)
+
+            setbuttons()
+            break
+
+        }
+
+        case 9:{
+
+            loadInto(xyGraph,document.getElementById("output"))
+            const graph = document.getElementById("graph")
+
+            const entries = addEntries(["angle", "g", "u", "h","m","Cd","rho","A","timeStep"],["drag","noDrag"], inputs, updatePlot)
+
+            const angleInput = entries.next().value
+            const gInput = entries.next().value
+            const uInput = entries.next().value
+            const heightInput = entries.next().value
+            const massInput = entries.next().value
+            const cdInput = entries.next().value
+            const rhoInput = entries.next().value
+            const aInput = entries.next().value
+            const timeStepInput = entries.next().value
+
+            const observationsLabel = entries.next().value
+            console.log(observationsLabel)
+
+            updatePlot()
+            graph.updateAxes()
+
+            function updatePlot() {
+                const angle = toRadians(parseFloat(angleInput.value))
+                const g = parseFloat(gInput.value)
+                const u = parseFloat(uInput.value)
+                const height = parseFloat(heightInput.value)
+                const mass = parseFloat(massInput.value)
+                const cd = parseFloat(cdInput.value)
+                const rho = parseFloat(rhoInput.value)
+                const a = parseFloat(aInput.value)
+                const timeStep = parseFloat(timeStepInput.value)
+
+                const noDragTrajectory = getTrajectory(g, u, angle, height)
+
+                let vx = horizontalComponent(u, angle)
+                let vy = verticalComponent(u, angle)
+                let x = 0
+                let y = height
+
+                const k = cd*rho*a/(2*mass)
+
+                const dragTrajectory = [[x,y]]
+
+                while (y >= 0) {
+
+                    const v = Math.sqrt(vx**2+vy**2)
+                    const ax = -k*v*vx
+                    const ay = -k*v*vy-g
+
+                    x += vx*timeStep+0.5*ax*timeStep**2
+                    y += vy*timeStep+0.5*ay*timeStep**2
+
+                    vx += ax*timeStep
+                    vy += ay*timeStep
+
+                    dragTrajectory.push([x,y])
+                }
+
+                if (dragTrajectory.length <= 20){
+                    observationsLabel.innerText = "The time step is too high for drag results to be meaningful (You can manually set it by clicking the number if the slider is limiting)"
+                } else{
+                    observationsLabel.innerText = ""
+                }
+
+                graph.clearLinePlotData()
+                graph.plotLine(noDragTrajectory.points, "blue")
+                graph.plotLine(dragTrajectory,"red")
+            }
+
+            setbuttons()
+            break
+        }
+
     }
 }
 
 function* addEntries(entries,legends,into,updatePlot){
     entries.forEach((entry)=>{
         const presets = entryPresets[entry]
-        addEntry(presets["name"],presets["label"],into,presets["value"],presets["min"],presets["max"])
+
+        switch (presets.type){
+            case "Integer":
+                addEntry(presets.name,presets.label,into,presets.value,presets.min,presets.max,1)
+                break
+            case "Float":
+                addEntry(presets.name,presets.label,into,presets.value,presets.min,presets.max,0.001)
+                break
+        }
     })
     legends.forEach((legend) =>{
         const presets = legendPresets[legend]
@@ -324,11 +576,11 @@ function addLegend(label,infoBefores,infos,infoAfters,colour,into){
     into.innerHTML += html
 }
 
-function addEntry(name, label, into, value=5, min=1, max=100) {
+function addEntry(name, label, into, value=5, min=1, max=100, step = 0.001) {
     const html = `<div class="entry">
     <label class="inputLabel" for="${name}">${label}</label>
     <input id="${name}" class="numberInput" type="number" name="${name}" min="${min}" max="${max}" value="${value}">
-    <input id="${name}Slider" class="slider" type="range" name="${name}" min="${min}" max="${max}" value="${value}" step="0.001">
+    <input id="${name}Slider" class="slider" type="range" name="${name}" min="${min}" max="${max}" value="${value}" step="${step}">
     </div>`
 
     into.innerHTML += html
