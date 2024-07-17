@@ -18,11 +18,19 @@ table,label,input,body,tbody,html,div,p{
     justify-content: space-around;
     height: 100px;
 }
-.navigationButton{
+.navigationButton,.inactiveNavigationButton{
     height: 50px;
     width: 200px;
+}
+.navigationButton{
     cursor: pointer;
 }
+.inactiveNavigationButton{
+    color: gray;
+    pointer-events: none ;
+}
+
+
 #inputs{
     flex-grow: 1;
     display:flex;
