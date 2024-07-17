@@ -102,6 +102,7 @@ export class graph extends HTMLElement {
 
     disconnectedCallback(){
         this.cancelAnimation()
+        this.cancelRender()
     }
 
     plotLine(points, colour) {
@@ -134,7 +135,9 @@ export class graph extends HTMLElement {
 
     animateFirstLine(timeStep){
 
+        // cancel any other animations that might be going on to restart
         this.cancelAnimation()
+        this.cancelRender()
 
         // user enters data in seconds whereas performance.now uses milliseconds
         timeStep = timeStep*1000
@@ -194,7 +197,15 @@ export class graph extends HTMLElement {
         }
     }
 
+    // As javascript does not currently support cancelling promises, I had to do this
+    cancelRender(){
+        this.renderCancelled = true
+    }
+
     async saveFirstLine(timeStep,fps,resolution){
+
+        this.renderCancelled = false
+
         this.cancelAnimation()
         this.clearLinePlots()
         this.clearPointPlots()
@@ -226,29 +237,33 @@ export class graph extends HTMLElement {
         const lineToAnimate = this.linePlots[0]
         const numberOfFrames = Math.trunc((lineToAnimate.points.length-1)*timeStep/timePerFrame)
 
-        console.log(timePerFrame,numberOfFrames,timePerFrame*numberOfFrames)
-
         for (let i = 0; i<numberOfFrames;i++){
+            if (this.renderCancelled){
+                break
+            }
 
             this.goToTime(i*timePerFrame,timeStep,lineToAnimate)
 
             await this.captureFrame(timePerTimestamp*i,timePerTimestamp,resolution)
         }
 
-        await this.videoEncoder.flush()
-        muxer.finalize()
+        if (!this.renderCancelled) {
 
-        let { buffer } = muxer.target // Buffer contains final MP4 file
+            await this.videoEncoder.flush()
+            muxer.finalize()
 
-        const videoUrl = URL.createObjectURL(new Blob([buffer], { type: 'video/mp4' }))
+            let {buffer} = muxer.target // Buffer contains final MP4 file
 
-        // Create a download link
-        const downloadLink = document.createElement('a')
-        downloadLink.href = videoUrl
-        downloadLink.download = 'bouncingProjectile.mp4'
+            const videoUrl = URL.createObjectURL(new Blob([buffer], {type: 'video/mp4'}))
 
-        // Trigger the download automatically
-        downloadLink.click()
+            // Create a download link
+            const downloadLink = document.createElement('a')
+            downloadLink.href = videoUrl
+            downloadLink.download = 'bouncingProjectile.mp4'
+
+            // Trigger the download automatically
+            downloadLink.click()
+        }
 
     }
 
@@ -332,6 +347,7 @@ export class graph extends HTMLElement {
 
     updateAxes() {
         this.cancelAnimation()
+        this.cancelRender()
 
         this.clearGridLines()
         this.clearLinePlots()
