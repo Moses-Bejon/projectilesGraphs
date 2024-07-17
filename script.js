@@ -353,7 +353,7 @@ function task(number) {
 
             const graph = document.getElementById("graph")
 
-            const entries = addEntries(["g", "u", "h", "angle","N","C","timeStep"],[], inputs, updatePlot)
+            const entries = addEntries(["g", "u", "h", "angle","N","C","timeStep","fps","resolution"],[], inputs, updatePlot)
             const gInput = entries.next().value
             const uInput = entries.next().value
             const heightInput = entries.next().value
@@ -361,6 +361,8 @@ function task(number) {
             const NInput = entries.next().value
             const CInput = entries.next().value
             const timeStepInput = entries.next().value
+            const fpsInput = entries.next().value
+            const resolutionInput = entries.next().value
 
             const playButton = document.createElement("button")
             playButton.id = "playButton"
@@ -413,6 +415,8 @@ function task(number) {
                 const N = parseInt(NInput.value)
                 const C = parseFloat(CInput.value)
                 const timeStep = parseFloat(timeStepInput.value)
+                const fps = parseFloat(fpsInput.value)
+                const resolution = parseInt(resolutionInput.value)
 
                 let position = [0,height]
                 const vx = horizontalComponent(u, angle)
@@ -439,7 +443,7 @@ function task(number) {
                 playButton.onclick = () => {graph.animateFirstLine(timeStep)}
                 saveButton.onclick = () => {
                     saveButton.innerText = "Saving animation..."
-                    graph.saveFirstLine(timeStep,30).then(()=>{
+                    graph.saveFirstLine(timeStep,fps,resolution).then(()=>{
                         saveButton.innerText = "Save animation as mp4"
                     })
                 }
