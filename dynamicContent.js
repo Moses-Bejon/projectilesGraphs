@@ -9,9 +9,9 @@ export const entryPresets= {
     N:{name:"N",label:"Number of bounces: ",value:"3",min:"0",max:"100",type:"Integer"},
     C:{name:"C",label:"Coefficient of restitution: ",value:"0.6",min:"0",max:"1",type:"Float"},
     Cd:{name:"Cd",label:"Drag coefficient: ",value:"0.47",min:"0.01",max:"1.5",type:"Float"},
-    rho:{name:"rho",label:"Air density (Kgm<sup>-3</sup>): ",value:"1",min:"0",max:"100",type:"Float"},
-    A:{name:"A",label:"Cross-section (m<sup>2</sup>): ",value:"0.25",min:"0",max:"100",type:"Float"},
-    m:{name:"m",label:"Mass (Kg): ",value:"1",min:"0.01",max:"1000",type:"Float"},
+    rho:{name:"rho",label:"Air density (Kgm<sup>-3</sup>): ",value:"1",min:"0",max:"10",type:"Float"},
+    A:{name:"A",label:"Cross-section (m<sup>2</sup>): ",value:"0.25",min:"0",max:"10",type:"Float"},
+    m:{name:"m",label:"Mass (Kg): ",value:"1",min:"0.01",max:"50",type:"Float"},
     fps:{name:"fps",label:"FPS of mp4 (Hz): ",value:"30",min:"0.1",max:"100",type:"Float"},
     resolution:{name:"resolution",label:"Resolution of mp4: ",value:"500",min:"20",max:"900",type:"Integer"}
 }
