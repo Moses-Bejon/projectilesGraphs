@@ -1,11 +1,11 @@
 import {
     formatValue,
-} from "./maths.js";
+} from "./maths.js"
 
-import { Muxer, ArrayBufferTarget } from './mp4-muxer.mjs';
+import { Muxer, ArrayBufferTarget } from './mp4-muxer.mjs'
 
 const serializer = new XMLSerializer()
-const DOMURL = self.URL || self.webkitURL || self;
+const DOMURL = self.URL || self.webkitURL || self
 const frame = new Image()
 
 const template = document.createElement("template")
@@ -194,7 +194,7 @@ export class graph extends HTMLElement {
         }
     }
 
-    async saveFirstLine(timeStep,fps){
+    async saveFirstLine(timeStep,fps,resolution){
         this.cancelAnimation()
         this.clearLinePlots()
         this.clearPointPlots()
@@ -203,22 +203,22 @@ export class graph extends HTMLElement {
             target: new ArrayBufferTarget(),
             video: {
                 codec: 'avc',
-                width: 500,
-                height: 500
+                width: resolution,
+                height: resolution
             },
             fastStart: 'in-memory'
-        });
+        })
 
         this.videoEncoder = new VideoEncoder({
             output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
             error: e => console.error(e)
-        });
+        })
         this.videoEncoder.configure({
             codec: 'avc1.42001f',
-            width: 500,
-            height: 500,
+            width: resolution,
+            height: resolution,
             bitrate: 1e6
-        });
+        })
 
         const timePerFrame = 1000/fps
         const timePerTimestamp = Math.round(1000000/fps)
@@ -226,36 +226,38 @@ export class graph extends HTMLElement {
         const lineToAnimate = this.linePlots[0]
         const numberOfFrames = Math.trunc((lineToAnimate.points.length-1)*timeStep/timePerFrame)
 
+        console.log(timePerFrame,numberOfFrames,timePerFrame*numberOfFrames)
+
         for (let i = 0; i<numberOfFrames;i++){
 
             this.goToTime(i*timePerFrame,timeStep,lineToAnimate)
 
-            await this.captureFrame(timePerTimestamp*i,timePerTimestamp)
+            await this.captureFrame(timePerTimestamp*i,timePerTimestamp,resolution)
         }
 
-        await this.videoEncoder.flush();
-        muxer.finalize();
+        await this.videoEncoder.flush()
+        muxer.finalize()
 
-        let { buffer } = muxer.target; // Buffer contains final MP4 file
+        let { buffer } = muxer.target // Buffer contains final MP4 file
 
-        const videoUrl = URL.createObjectURL(new Blob([buffer], { type: 'video/mp4' }));
+        const videoUrl = URL.createObjectURL(new Blob([buffer], { type: 'video/mp4' }))
 
         // Create a download link
-        const downloadLink = document.createElement('a');
-        downloadLink.href = videoUrl;
-        downloadLink.download = 'bouncingProjectile.mp4';
+        const downloadLink = document.createElement('a')
+        downloadLink.href = videoUrl
+        downloadLink.download = 'bouncingProjectile.mp4'
 
         // Trigger the download automatically
-        downloadLink.click();
+        downloadLink.click()
 
     }
 
-    async captureFrame(timeStamp,duration){
+    async captureFrame(timeStamp,duration,resolution){
 
         // fun fact, it's actually faster to recreate the canvas each time from scratch than it is to clone the node
         const canvas = document.createElement("canvas")
-        canvas.width = 1000
-        canvas.height = 1000
+        canvas.width = resolution
+        canvas.height = resolution
         const ctx = canvas.getContext("2d")
 
         const svgString = serializer.serializeToString(this.canvas)
