@@ -407,6 +407,7 @@ function task(number) {
 
             function updatePlot() {
                 graph.cancelAnimation()
+                graph.cancelRender()
 
                 const angle = toRadians(parseFloat(angleInput.value))
                 const g = parseFloat(gInput.value)
@@ -442,9 +443,20 @@ function task(number) {
 
                 playButton.onclick = () => {graph.animateFirstLine(timeStep)}
                 saveButton.onclick = () => {
-                    saveButton.innerText = "Saving animation..."
+
+                    // There is no reason why a user would want to restart the rendering process without first changing
+                    // one of the parameters. Therefore, this button is deactivated
+                    deactivateButton(saveButton)
+                    deactivateButton(playButton)
+
+                    saveButton.innerText = "Saving animation"
+                    const loadingAnimation = new loadAnimation(saveButton)
                     graph.saveFirstLine(timeStep,fps,resolution).then(()=>{
+                        loadingAnimation.finishLoad()
+                        activateButton(saveButton)
+                        activateButton(playButton)
                         saveButton.innerText = "Save animation as mp4"
+                        updatePlot()
                     })
                 }
 
@@ -453,7 +465,12 @@ function task(number) {
             const buttonContainer = document.getElementById("fitButtonContainer")
 
             buttonContainer.appendChild(playButton)
-            buttonContainer.appendChild(saveButton)
+
+            if (typeof VideoEncoder !== "undefined") {
+                buttonContainer.appendChild(saveButton)
+            } else{
+                window.alert("Video encoders are not supported by your browser. You cannot save this animation as an mp4.")
+            }
 
             setbuttons()
             break
@@ -478,7 +495,6 @@ function task(number) {
             const timeStepInput = entries.next().value
 
             const observationsLabel = entries.next().value
-            console.log(observationsLabel)
 
             updatePlot()
             graph.updateAxes()
@@ -536,6 +552,35 @@ function task(number) {
         }
 
     }
+}
+
+class loadAnimation{
+    constructor(element) {
+        this.element = element
+        this.defaultText = this.element.innerText
+        this.load1()
+    }
+
+    load1() {
+        this.element.innerText = `${this.defaultText}.`
+        this.timeoutID = setTimeout(()=>{this.load2()}, 500)
+    }
+
+    load2() {
+        this.element.innerText = `${this.defaultText}..`
+        this.timeoutID = setTimeout(()=>{this.load3()}, 500)
+    }
+
+    load3(){
+        this.element.innerText = `${this.defaultText}...`
+        this.timeoutID = setTimeout(()=>{this.load1()}, 500)
+    }
+
+    finishLoad(){
+        clearTimeout(this.timeoutID)
+        this.defaultText = this.element.innerText
+    }
+
 }
 
 function* addEntries(entries,legends,into,updatePlot){
@@ -603,6 +648,14 @@ function connectToEntry(name,updatePlot){
     })
 
     return input
+}
+
+function deactivateButton(button){
+    button.className = "inactiveNavigationButton"
+}
+function activateButton(button){
+    button.className = "navigationButton"
+    button.onmouseover = null
 }
 
 home()
