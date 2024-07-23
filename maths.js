@@ -81,8 +81,11 @@ export function formatValue(value, precision = 2) {
     if (value < 1e-10 && value > -1e-10) {
         return "0"
     }
-    if (Math.log10(value) >= 2 || Math.log10(value) <= -2) {
-        const exponent = Math.floor(Math.log10(value))
+
+    const loggedValue = Math.log10(Math.abs(value))
+
+    if (loggedValue >= 2 || loggedValue <= -2) {
+        const exponent = Math.floor(loggedValue)
         const coefficient = value / Math.pow(10, exponent)
         return String(coefficient.toPrecision(precision)) + "×10^" + String(exponent)
     } else {
