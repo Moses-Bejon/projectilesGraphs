@@ -88,7 +88,7 @@ table,label,input,body,tbody,html,div,p{
 }
 
 #output{
-    display: flex;
+    /*display: flex;*/
 }
 
 #graph,.outputContainer{
@@ -123,6 +123,38 @@ h4{
     background-color: black;
 }
 
+.leftBracket{
+    text-align: right;
+}
+.rightBracket{
+    transform: scale(-1,1);
+}
+
+#vectorLabels,#vectors{
+    display: flex;
+    justify-content: space-around;
+}
+
+.vectorEntry{
+    text-align: center;
+}
+
+#vectors{
+    height: 100px;
+    align-items: stretch;
+}
+
+.vector{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+#box{
+    border: solid;
+    width: 99%;
+    aspect-ratio: 1/1;
+}
 
 @media (max-width: 800px){
     #graph,.outputContainer{
