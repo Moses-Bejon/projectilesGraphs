@@ -21,7 +21,8 @@ import {
     taskHTML,
     xyGraph,
     trGraph,
-    inProgress
+    vectorHTML,
+    inProgress, boxHTML
 } from "./dynamicContent.js";
 
 const content = document.getElementById("content")
@@ -54,11 +55,15 @@ function home() {
     document.getElementById("task9Button").onclick = function (){
         task(9)
     }
+    document.getElementById("task10Button").onclick = function () {
+        task(10)
+    }
 }
 
 function task(number) {
     loadInto(taskHTML, content)
     const inputs = document.getElementById("inputs")
+    const output = document.getElementById("output")
 
     function setbuttons() {
         const fitButton = document.getElementById("fitButton")
@@ -71,7 +76,7 @@ function task(number) {
     }
     switch (number) {
         case 1: {
-            loadInto(xyGraph,document.getElementById("output"))
+            loadInto(xyGraph,output)
             const graph = document.getElementById("graph")
 
             const entries = addEntries(["angle", "g", "u", "h", "timeStep"],[], inputs, updatePlot)
@@ -116,7 +121,7 @@ function task(number) {
             break
         }
         case 2: {
-            loadInto(xyGraph,document.getElementById("output"))
+            loadInto(xyGraph,output)
             const graph = document.getElementById("graph")
 
             const entries = addEntries(["angle", "g", "u", "h"],[], inputs, updatePlot)
@@ -146,7 +151,7 @@ function task(number) {
             break
         }
         case 3: {
-            loadInto(xyGraph,document.getElementById("output"))
+            loadInto(xyGraph,output)
             const graph = document.getElementById("graph")
 
             const entries = addEntries(["g", "u", "X", "Y"],["minU","highBall","lowBall","maxX"], inputs, updatePlot)
@@ -234,7 +239,7 @@ function task(number) {
             break
         }
         case 4: {
-            loadInto(xyGraph,document.getElementById("output"))
+            loadInto(xyGraph,output)
             const graph = document.getElementById("graph")
 
             const entries = addEntries(["angle", "g", "u", "h"],["inputX","maxX"], inputs, updatePlot)
@@ -281,7 +286,7 @@ function task(number) {
             break
         }
         case 7: {
-            loadInto(trGraph, document.getElementById("output"))
+            loadInto(trGraph, output)
             const graph = document.getElementById("graph")
 
             const entries = addEntries(["g", "u", "h", "angle"], ["turningPoints"], inputs, updatePlot)
@@ -349,7 +354,7 @@ function task(number) {
 
 
         case 8: {
-            loadInto(xyGraph, document.getElementById("output"))
+            loadInto(xyGraph, output)
 
             const graph = document.getElementById("graph")
 
@@ -479,7 +484,7 @@ function task(number) {
 
         case 9:{
 
-            loadInto(xyGraph,document.getElementById("output"))
+            loadInto(xyGraph,output)
             const graph = document.getElementById("graph")
 
             const entries = addEntries(["angle", "g", "u", "h","m","Cd","rho","A","timeStep"],["drag","noDrag"], inputs, updatePlot)
@@ -548,6 +553,317 @@ function task(number) {
             }
 
             setbuttons()
+            break
+        }
+
+        case 10:{
+            const inconsequentialVelocity = 0.0001
+
+            loadInto(boxHTML,output)
+
+            const entries = addEntries(["dimensions","r","l","C","Cd","rho","A","m"],[],inputs,updatePlot)
+
+            inputs.innerHTML += vectorHTML
+
+            const positionLabel = document.getElementById("position")
+            const velocityLabel = document.getElementById("velocity")
+            const gLabel = document.getElementById("g")
+
+            const box = document.getElementById("box")
+
+            const dimensionsInput = entries.next().value
+            const rInput = entries.next().value
+            const lInput = entries.next().value
+            const CInput = entries.next().value
+            const CdInput = entries.next().value
+            const rhoInput = entries.next().value
+            const AInput = entries.next().value
+            const mInput = entries.next().value
+
+            let position = []
+            let positionInputs = []
+            let velocity = []
+            let velocityInputs = []
+            let g = []
+            let gInputs = []
+
+            let dimensions
+            let r
+            let l
+            let C
+            let Cd
+            let rho
+            let A
+            let m
+
+            let k
+
+            // Used to get delta time later on, done here to time the upcoming commands
+            // for sensible estimation of initial delta time
+            let previousTime = performance.now()
+
+            // used to cancel animations
+            let currentAnimationFrame
+
+            // used to store the current method of displaying our svg
+            let getSVGContent
+
+            updatePlot()
+
+            function getOneDimensionalSVGContent(){
+                return `
+                <rect width = ${2*r/l} height = 1 x = ${(position[0]-r)/l} y = 0></rect>
+                `
+            }
+
+            function getTwoDimensionalSVGContent(){
+                return `
+                <circle cx = ${position[0]/l} cy = ${position[1]/l} r=${r/l}></circle>
+                `
+            }
+
+            function getThreeDimensionalSVGContent(){
+                const focalLength = 1+2*r/l
+                const distance = 1
+
+                const scalingDueToDistance = focalLength/(distance+position[2]/l)
+
+                const backRectSide = focalLength/(distance+1)
+                const backRectCorner = 0.5-backRectSide/2
+                return `
+                    <rect width = ${backRectSide} height = ${backRectSide} x = ${backRectCorner} y = ${backRectCorner} fill="none" stroke-width="0.001" stroke="black"></rect>
+                    <line x1="0" y1="0" x2="${backRectCorner}" y2="${backRectCorner}" stroke="black" stroke-width="0.001"></line>
+                    <line x1="1" y1="0" x2="${1-backRectCorner}" y2="${backRectCorner}" stroke="black" stroke-width="0.001"></line>
+                    <line x1="0" y1="1" x2="${backRectCorner}" y2="${1-backRectCorner}" stroke="black" stroke-width="0.001"></line>
+                    <line x1="1" y1="1" x2="${1-backRectCorner}" y2="${1-backRectCorner}" stroke="black" stroke-width="0.001"></line>
+                    <circle cx = ${0.5+scalingDueToDistance*(position[0]/l-0.5)} cy = ${0.5+scalingDueToDistance*(position[1]/l-0.5)} r = ${scalingDueToDistance*r/l}></circle>
+                `
+            }
+
+            function getFourDimensionalSVGContent(){
+                return `
+                <rect width = 1 height = 1 x = 0 y = 0 fill = "rgb(${255*position[3]/l},255,255)"></rect>
+                `+getThreeDimensionalSVGContent()
+            }
+
+            function getFiveDimensionalSVGContent(){
+                return `
+                <rect width = 1 height = 1 x = 0 y = 0 fill = "rgb(${255*position[3]/l},${255*position[4]/l},255)"></rect>
+                `+getThreeDimensionalSVGContent()
+            }
+
+            function getSixDimensionalSVGContent(){
+                return `
+                <rect width = 1 height = 1 x = 0 y = 0 fill = "rgb(${255*position[3]/l},${255*position[4]/l},${255*position[5]/l})"></rect>
+                `+getThreeDimensionalSVGContent()
+            }
+
+            function updateAnimation(){
+                const currentTime = performance.now()
+                const deltaTime = currentTime - previousTime
+                previousTime = currentTime
+
+                moveProjectileThroughTimePeriod(deltaTime/1000)
+
+                for (let i = 0;i<dimensions;i++){
+                    positionInputs[i].value = formatValue(position[i],4)
+                    velocityInputs[i].value = formatValue(velocity[i],4)
+                    gInputs[i].value = formatValue(g[i],4)
+                }
+
+                box.innerHTML = getSVGContent()
+                currentAnimationFrame = requestAnimationFrame(updateAnimation)
+            }
+
+            function updatePlot(){
+                cancelAnimationFrame(currentAnimationFrame)
+
+                dimensions = parseInt(dimensionsInput.value)
+                r = parseFloat(rInput.value)
+                l = parseFloat(lInput.value)
+                C = parseFloat(CInput.value)
+                Cd = parseFloat(CdInput.value)
+                rho = parseFloat(rhoInput.value)
+                A = parseFloat(AInput.value)
+                m = parseFloat(mInput.value)
+
+                k = Cd*rho*A/(2*m)
+
+                if (position.length > dimensions){
+
+                    for (let i = dimensions;i<position.length;i++){
+                        positionInputs[i].remove()
+                        velocityInputs[i].remove()
+                        gInputs[i].remove()
+                    }
+
+                    position = position.slice(0,dimensions)
+                    positionInputs = positionInputs.slice(0,dimensions)
+                    velocity = velocity.slice(0,dimensions)
+                    velocityInputs = velocityInputs.slice(0,dimensions)
+                    g = g.slice(0,dimensions)
+                    gInputs = gInputs.slice(0,dimensions)
+
+                } else if (position.length < dimensions){
+                    const lengthOfMissingRegion = dimensions-position.length
+                    position = position.concat(new Array(lengthOfMissingRegion).fill(l/2))
+                    velocity = velocity.concat(new Array(lengthOfMissingRegion).fill(0))
+                    g = g.concat(new Array(lengthOfMissingRegion).fill(0))
+
+                    for (let i = 0;i<lengthOfMissingRegion;i++){
+                        const index = i+position.length-lengthOfMissingRegion
+
+                        const positionEntry = document.createElement("input")
+                        positionEntry.type = "text" // this removes arrows that off centre the number
+                        positionEntry.value = String(l/2)
+                        positionEntry.className = "vectorEntry"
+                        positionEntry.inputMode = "numeric"
+                        positionEntry.addEventListener("focusin",()=>{
+                            positionInputs[index] = document.createElement("input")
+                        })
+                        positionEntry.addEventListener("focusout",()=>{
+                            positionInputs[index] = positionEntry
+                            cancelAnimationFrame(currentAnimationFrame)
+                            position[index] = parseFloat(positionEntry.value)
+                            updateAnimation()
+                        })
+                        positionInputs.push(positionEntry)
+                        positionLabel.appendChild(positionEntry)
+
+                        const velocityEntry = document.createElement("input")
+                        velocityEntry.type = "text"
+                        velocityEntry.value = "0"
+                        velocityEntry.className = "vectorEntry"
+                        velocityEntry.inputMode = "numeric"
+                        velocityEntry.addEventListener("focusin",()=>{
+                            velocityInputs[index] = document.createElement("input")
+                        })
+                        velocityEntry.addEventListener("focusout",()=>{
+                            velocityInputs[index] = velocityEntry
+                            cancelAnimationFrame(currentAnimationFrame)
+                            velocity[index] = parseFloat(velocityEntry.value)
+                            updateAnimation()
+                        })
+                        velocityInputs.push(velocityEntry)
+                        velocityLabel.appendChild(velocityEntry)
+
+                        const gEntry = document.createElement("input")
+                        gEntry.type = "text"
+                        gEntry.value = "0"
+                        gEntry.className = "vectorEntry"
+                        gEntry.inputMode = "numeric"
+                        gEntry.addEventListener("focusin",()=>{
+                            gInputs[index] = document.createElement("input")
+                        })
+                        gEntry.addEventListener("focusout",()=>{
+                            gInputs[index] = gEntry
+                            cancelAnimationFrame(currentAnimationFrame)
+                            g[index] = parseFloat(gEntry.value)
+                            updateAnimation()
+                        })
+                        gInputs.push(gEntry)
+                        gLabel.appendChild(gEntry)
+                    }
+                }
+
+                switch (dimensions){
+                    case 1:{
+                        getSVGContent = getOneDimensionalSVGContent
+                        break
+                    }
+                    case 2:{
+                        getSVGContent = getTwoDimensionalSVGContent
+                        break
+                    }
+                    case 3:{
+                        getSVGContent = getThreeDimensionalSVGContent
+                        break
+                    }
+                    case 4:{
+                        getSVGContent = getFourDimensionalSVGContent
+                        break
+                    }
+                    case 5:{
+                        getSVGContent = getFiveDimensionalSVGContent
+                        break
+                    }
+                    case 6:{
+                        getSVGContent = getSixDimensionalSVGContent
+                        break
+                    }
+                }
+
+                updateAnimation()
+
+            }
+
+            function moveProjectileThroughTimePeriod(time){
+                const acceleration = getAcceleration(time)
+
+                for (let i = 0;i<dimensions;i++){
+                    moveAlongDimension(i,time,acceleration[i])
+                }
+            }
+
+            function moveAlongDimension(dimension,time,acceleration){
+
+                const nextPosition = position[dimension]+(velocity[dimension]+0.5*acceleration*time)*time
+
+                if (nextPosition < r){
+                    const t = tfromuas(-velocity[dimension],-acceleration,position[dimension]-r)
+                    position[dimension] = r
+                    if (velocity[dimension] <= -inconsequentialVelocity){
+                        velocity[dimension] = -C * (velocity[dimension] + acceleration*t)
+                        moveAlongDimension(dimension,time-t,acceleration)
+                    } else{
+                        velocity[dimension] = 0
+                    }
+                } else if (nextPosition > l-r){
+                    const t = tfromuas(velocity[dimension],acceleration,l-position[dimension]-r)
+                    position[dimension] = l-r
+
+                    if (velocity[dimension] >= inconsequentialVelocity){
+                        velocity[dimension] = -C * (velocity[dimension] + acceleration*t)
+                        moveAlongDimension(dimension,time-t,acceleration)
+                    } else{
+                        velocity[dimension] = 0
+                    }
+                } else{
+                    position[dimension] = nextPosition
+                    velocity[dimension] += acceleration*time
+                }
+            }
+
+            function getAcceleration(){
+
+                let speed = 0
+                for (let i = 0;i<dimensions;i++){
+                    speed += velocity[i]**2
+                }
+                speed = Math.sqrt(speed)
+                const airResistanceMagnitude = -k*speed
+
+                // acceleration is stored for use in finding the velocity after this
+                const acceleration = []
+
+
+                for (let i = 0;i<dimensions;i++) {
+                    acceleration.push(airResistanceMagnitude * velocity[i] + g[i])
+                }
+
+                return acceleration
+            }
+
+            function tfromuas(u,a,s){
+                if (a !== 0) {
+                    return (-u + Math.sqrt(u ** 2 + 2 * a * s)) / a
+                } else{
+                    return s/u
+                }
+            }
+
+            setbuttons()
+            document.getElementById("fitButton").remove()
             break
         }
 
@@ -626,13 +942,16 @@ function addLegend(label,infoBefores,infos,infoAfters,colour,into){
 }
 
 function addEntry(name, label, into, value=5, min=1, max=100, step = 0.001) {
-    const html = `<div class="entry">
+
+    const entry = document.createElement("div")
+    entry.className = "entry"
+    entry.innerHTML = `
     <label class="inputLabel" for="${name}">${label}</label>
     <input id="${name}" class="numberInput" type="number" name="${name}" min="${min}" max="${max}" value="${value}">
     <input id="${name}Slider" class="slider" type="range" name="${name}" min="${min}" max="${max}" value="${value}" step="${step}">
-    </div>`
+    `
 
-    into.innerHTML += html
+    into.appendChild(entry)
 }
 
 function connectToEntry(name,updatePlot){
