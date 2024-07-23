@@ -13,8 +13,12 @@ export const entryPresets= {
     A:{name:"A",label:"Cross-section (m<sup>2</sup>): ",value:"0.25",min:"0",max:"10",type:"Float"},
     m:{name:"m",label:"Mass (Kg): ",value:"1",min:"0.01",max:"50",type:"Float"},
     fps:{name:"fps",label:"FPS of mp4 (Hz): ",value:"30",min:"0.1",max:"100",type:"Float"},
-    resolution:{name:"resolution",label:"Resolution of mp4: ",value:"500",min:"20",max:"900",type:"Integer"}
+    resolution:{name:"resolution",label:"Resolution of mp4: ",value:"500",min:"20",max:"900",type:"Integer"},
+    dimensions:{name:"dimensions",label:"Number of dimensions: ",value:"3",min:"1",max:"6",type:"Integer"},
+    r:{name:"r",label:"Ball radius (m): ",value:"0.1",min:"0.01",max:"5",type:"Float"},
+    l:{name:"l",label:"Side length of box (m): ",value:"10",min:"1",max:"100",type:"Float"}
 }
+
 
 export const legendPresets = {
     highBall:{label:"High ball trajectory: ",infoBefores:["Angle: ","Trajectory length: "],infos:["highBallAngle","highBallLength"],infoAfters:["",""],colour:"blue"},
@@ -35,20 +39,44 @@ export const homeHTML = `
 <button id="task7Button" class="navigationButton">Task 7</button>
 <button id="task8Button" class="navigationButton">Task 8</button>
 <button id="task9Button" class="navigationButton">Task 9</button>
+<button id="task10Button" class="navigationButton">N-dimensional projectile extension</button>
 `
 export const taskHTML = `
 <div id="taskContentGrid">
     <div id="output"></div>
     <div id="table">
         <div id="inputs"></div>
-        <div>
-            <div id="fitButtonContainer">
-                <button id="fitButton" class="navigationButton">Fit axes to graph</button>
-                <button id="homeButton" class="navigationButton">Home</button>
-            </div>
+        <div id="fitButtonContainer">
+            <button id="fitButton" class="navigationButton">Fit axes to graph</button>
+            <button id="homeButton" class="navigationButton">Home</button>
         </div>
     </div>
 </div>
+`
+
+// The superscript with nothing in it is to ensure the position label is aligned with the velocity and gravity labels
+export const vectorHTML = `
+    <div id="vectorLabels">
+        <h2>Position (m<sup></sup>)</h2>
+        <h2>Velocity (ms<sup>-1</sup>)</h2>
+        <h2>Gravity (ms<sup>-2</sup>)</h2>
+    </div>
+    <div id="vectors">
+        <img class="leftBracket" src="./noun-left-bracket-342654.svg">
+        <div id="position" class="vector"></div>
+        <img class="rightBracket" src="./noun-left-bracket-342654.svg">
+        <img class="leftBracket" src="./noun-left-bracket-342654.svg">
+        <div id="velocity" class="vector"></div>
+        <img class="rightBracket" src="./noun-left-bracket-342654.svg">
+        <img class="leftBracket" src="./noun-left-bracket-342654.svg">
+        <div id="g" class="vector"></div>
+        <img class="rightBracket" src="./noun-left-bracket-342654.svg">
+    </div>
+`
+
+export const boxHTML = `
+<svg id="box" viewBox="0 0 1 1">    
+</svg>
 `
 
 export const xyGraph = `
