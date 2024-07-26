@@ -32,14 +32,38 @@ export const legendPresets = {
 }
 
 export const homeHTML = `
-<button id="task1Button" class="navigationButton">Task 1</button>
-<button id="task2Button" class="navigationButton">Task 2</button>
-<button id="task3Button" class="navigationButton">Task 3</button>
-<button id="task4Button" class="navigationButton">Task 4</button>
-<button id="task7Button" class="navigationButton">Task 7</button>
-<button id="task8Button" class="navigationButton">Task 8</button>
-<button id="task9Button" class="navigationButton">Task 9</button>
-<button id="task10Button" class="navigationButton">N-dimensional projectile extension</button>
+<div class="taskContainer" id="task1Button">
+    <img class="taskPreview" src = "assets/taskPreviews/task1Preview.svg" alt="Preview image of task 1">
+    <button class="taskButton">Task 1</button>
+</div>
+<div class="taskContainer" id="task2Button">
+    <img class="taskPreview" src = "assets/taskPreviews/task2Preview.svg" alt="Preview image of task 2">
+    <button class="taskButton">Task 2</button>
+</div>
+<div class="taskContainer" id="task3Button">
+    <img class="taskPreview" src = "assets/taskPreviews/task3Preview.svg" alt="Preview image of task 3">
+    <button class="taskButton">Task 3</button>
+</div>
+<div class="taskContainer" id="task4Button">
+    <img class="taskPreview" src = "assets/taskPreviews/task4Preview.svg" alt="Preview image of task 4">
+    <button class="taskButton">Task 4</button>
+</div>
+<div class="taskContainer" id="task7Button">
+    <img class="taskPreview" src = "assets/taskPreviews/task7Preview.svg" alt="Preview image of task 7">
+    <button class="taskButton">Task 7</button>
+</div>
+<div class="taskContainer" id="task8Button">
+    <img class="taskPreview" src = "assets/taskPreviews/task8Preview.svg" alt="Preview image of task 8">
+    <button class="taskButton">Task 8</button>
+</div>
+<div class="taskContainer" id="task9Button">
+    <img class="taskPreview" src = "assets/taskPreviews/task9Preview.svg" alt="Preview image of task 9">
+    <button class="taskButton">Task 9</button>
+</div>
+<div class="taskContainer" id="task10Button">
+    <img class="taskPreview" src = "assets/taskPreviews/task10Preview.svg" alt="Preview image of my N-dimensional projectile extension">
+    <button class="taskButton">N-dimensional projectile extension</button>
+</div>
 `
 export const taskHTML = `
 <div id="taskContentGrid">
@@ -62,15 +86,15 @@ export const vectorHTML = `
         <h2>Gravity (ms<sup>-2</sup>)</h2>
     </div>
     <div id="vectors">
-        <img class="leftBracket" src="./noun-left-bracket-342654.svg">
+        <img class="leftBracket" src="assets/leftBracket.svg" aria-hidden="true" alt="">
         <div id="position" class="vector"></div>
-        <img class="rightBracket" src="./noun-left-bracket-342654.svg">
-        <img class="leftBracket" src="./noun-left-bracket-342654.svg">
+        <img class="rightBracket" src="assets/leftBracket.svg" aria-hidden="true" alt="">
+        <img class="leftBracket" src="assets/leftBracket.svg" aria-hidden="true" alt="">
         <div id="velocity" class="vector"></div>
-        <img class="rightBracket" src="./noun-left-bracket-342654.svg">
-        <img class="leftBracket" src="./noun-left-bracket-342654.svg">
+        <img class="rightBracket" src="assets/leftBracket.svg" aria-hidden="true" alt="">
+        <img class="leftBracket" src="assets/leftBracket.svg" aria-hidden="true" alt="">
         <div id="g" class="vector"></div>
-        <img class="rightBracket" src="./noun-left-bracket-342654.svg">
+        <img class="rightBracket" src="assets/leftBracket.svg" aria-hidden="true" alt="">
     </div>
 `
 
