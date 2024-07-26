@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" id="box" viewBox="0 0 1 1">
+    <rect width="1" height="1" x="0" y="0" fill="rgb(127.5,127.5,255)"></rect>
+
+    <rect width="0.5634" height="0.5634" x="0.2183" y="0.2183" fill="none" stroke-width="0.001" stroke="black"></rect>
+    <line x1="0" y1="0" x2="0.2183" y2="0.2183" stroke="black" stroke-width="0.001"></line>
+    <line x1="1" y1="0" x2="0.7817000000000001" y2="0.2183" stroke="black" stroke-width="0.001"></line>
+    <line x1="0" y1="1" x2="0.2183" y2="0.7817000000000001" stroke="black" stroke-width="0.001"></line>
+    <line x1="1" y1="1" x2="0.7817000000000001" y2="0.7817000000000001" stroke="black" stroke-width="0.001"></line>
+    <circle cx="0.5" cy="0.5" r="0.09525216"></circle>
+</svg>
