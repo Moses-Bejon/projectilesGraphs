@@ -77,18 +77,31 @@ export function verticalComponent(u, angle) {
     return u * Math.sin(angle)
 }
 
-export function formatValue(value, precision = 2) {
+export function sigmoid(z){
+    return 1/(1+Math.exp(-z*0.1))
+}
+
+export function formatExponentWithSuperText(exponent){
+    return "<sup>" + String(exponent) + "</sup>"
+}
+export function formatExponentWithoutSuperText(exponent){
+    return "^"+String(exponent)
+}
+
+export function formatValue(value, precision = 2,formatExponent = formatExponentWithSuperText) {
     if (value < 1e-10 && value > -1e-10) {
         return "0"
     }
 
     const loggedValue = Math.log10(Math.abs(value))
 
-    if (loggedValue >= 2 || loggedValue <= -2) {
+    if (loggedValue > 2 || loggedValue < -2) {
         const exponent = Math.floor(loggedValue)
         const coefficient = value / Math.pow(10, exponent)
-        return String(coefficient.toPrecision(precision)) + "×10^" + String(exponent)
+        return String(coefficient.toPrecision(precision)) + "×10" + formatExponent(exponent)
     } else {
         return String(value.toPrecision(precision))
     }
 }
+
+
