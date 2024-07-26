@@ -6,6 +6,21 @@ table,label,input,body,tbody,html,div,p{
     border: none;
     overflow-x: hidden;
 }
+
+#title{
+    display: flex;
+    justify-content: center;
+}
+
+#content{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.taskPreview{
+    border: solid grey;
+}
+
 #table{
     grid-column: 2;
     display: flex;
@@ -18,16 +33,23 @@ table,label,input,body,tbody,html,div,p{
     justify-content: space-around;
     height: 100px;
 }
+button,.taskContainer{
+    cursor: pointer;
+}
 .navigationButton,.inactiveNavigationButton{
     height: 50px;
     width: 200px;
 }
-.navigationButton{
-    cursor: pointer;
-}
 .inactiveNavigationButton{
     color: gray;
     pointer-events: none ;
+}
+
+.taskContainer,.taskButton{
+    width:280px;
+}
+.taskButton{
+    height: 75px;
 }
 
 
@@ -80,15 +102,13 @@ table,label,input,body,tbody,html,div,p{
 }
 #banner {
     height: 30px;
+    display: flex;
+    justify-content: space-between;
 }
 #taskContentGrid{
     display:grid;
     grid-template-columns: 1fr 1fr;
     width:100%;
-}
-
-#output{
-    /*display: flex;*/
 }
 
 #graph,.outputContainer{
