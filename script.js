@@ -1,11 +1,14 @@
 import {
     formatValue,
+    formatExponentWithoutSuperText,
     toRadians,
     toDegrees,
     horizontalComponent,
     verticalComponent,
     quadraticFormulaPositive,
-    quadraticFormulaNegative, cubicFormula
+    quadraticFormulaNegative,
+    cubicFormula,
+    sigmoid
 } from "./maths.js"
 
 import {
@@ -27,40 +30,91 @@ import {
 
 const content = document.getElementById("content")
 
-function loadInto(html, into){
-    into.innerHTML = html
+const bounceSounds = [
+    new Audio("./assets/bounces/01-bounces.mp3"),
+    new Audio("./assets/bounces/02-bounces.mp3"),
+    new Audio("./assets/bounces/03-bounces.mp3"),
+    new Audio("./assets/bounces/04-bounces.mp3")
+]
+
+function playBounceSoundEffect(amplitude=1){
+    const bounceSound = bounceSounds[Math.floor(Math.random()*bounceSounds.length)]
+    bounceSound.volume = amplitude
+    bounceSound.play()
+}
+
+let currentPage = 0
+
+// used to cancel animations
+let currentAnimationFrame
+function goToPage(page,saveHistory=true){
+    cancelAnimationFrame(currentAnimationFrame)
+
+    page = page%11
+    if (page > 0){
+        task(page)
+    } else {
+        home()
+    }
+
+    if (saveHistory){
+        history.pushState(page,"")
+    }
+}
+
+onpopstate = (event) => {
+    goToPage(event.state,false)
+}
+
+document.getElementById("nextButton").onclick = () => {
+    if (currentPage === 4){
+        goToPage(7)
+    } else {
+        goToPage(currentPage + 1)
+    }
+}
+document.getElementById("previousButton").onclick = () => {
+    if (currentPage === 7){
+        goToPage(4)
+    } else {
+        goToPage(currentPage - 1)
+    }
 }
 
 // used to enter homescreen and contains behaviour of the home screen
 function home() {
+    currentPage = 0
+
     loadInto(homeHTML, content)
     document.getElementById("task1Button").onclick = function () {
-        task(1)
+        goToPage(1)
     }
     document.getElementById("task2Button").onclick = function () {
-        task(2)
+        goToPage(2)
     }
     document.getElementById("task3Button").onclick = function () {
-        task(3)
+        goToPage(3)
     }
     document.getElementById("task4Button").onclick = function () {
-        task(4)
+        goToPage(4)
     }
     document.getElementById("task7Button").onclick = function (){
-        task(7)
+        goToPage(7)
     }
     document.getElementById("task8Button").onclick = function (){
-        task(8)
+        goToPage(8)
     }
     document.getElementById("task9Button").onclick = function (){
-        task(9)
+        goToPage(9)
     }
     document.getElementById("task10Button").onclick = function () {
-        task(10)
+        goToPage(10)
     }
 }
 
 function task(number) {
+    currentPage = number
+
     loadInto(taskHTML, content)
     const inputs = document.getElementById("inputs")
     const output = document.getElementById("output")
@@ -72,14 +126,16 @@ function task(number) {
         }
 
         const homeButton = document.getElementById("homeButton")
-        homeButton.onclick = home
+        homeButton.onclick = () => {goToPage(0)}
     }
     switch (number) {
         case 1: {
             loadInto(xyGraph,output)
             const graph = document.getElementById("graph")
 
-            const entries = addEntries(["angle", "g", "u", "h", "timeStep"],[], inputs, updatePlot)
+            const entries = addEntries(
+                ["angle", "g", "u", "h", "timeStep"],[], inputs, updatePlot
+            )
 
             const angleInput = entries.next().value
             const gInput = entries.next().value
@@ -124,7 +180,9 @@ function task(number) {
             loadInto(xyGraph,output)
             const graph = document.getElementById("graph")
 
-            const entries = addEntries(["angle", "g", "u", "h"],[], inputs, updatePlot)
+            const entries = addEntries(
+                ["angle", "g", "u", "h"],[], inputs, updatePlot
+            )
 
             const angleInput = entries.next().value
             const gInput = entries.next().value
@@ -154,7 +212,9 @@ function task(number) {
             loadInto(xyGraph,output)
             const graph = document.getElementById("graph")
 
-            const entries = addEntries(["g", "u", "X", "Y"],["minU","highBall","lowBall","maxX"], inputs, updatePlot)
+            const entries = addEntries(
+                ["g", "u", "X", "Y"],["minU","highBall","lowBall","maxX"], inputs, updatePlot
+            )
 
             const gInput = entries.next().value
             const uInput = entries.next().value
@@ -182,8 +242,12 @@ function task(number) {
                 const X = parseFloat(XInput.value)
                 const Y = parseFloat(YInput.value)
 
-                const angleLow = Math.atan(quadraticFormulaNegative(g * X ** 2, -2 * u ** 2 * X, 2 * u ** 2 * Y + g * X ** 2))
-                const angleHigh = Math.atan(quadraticFormulaPositive(g * X ** 2, -2 * u ** 2 * X, 2 * u ** 2 * Y + g * X ** 2))
+                const angleLow = Math.atan(quadraticFormulaNegative(
+                    g * X ** 2, -2 * u ** 2 * X, 2 * u ** 2 * Y + g * X ** 2
+                ))
+                const angleHigh = Math.atan(quadraticFormulaPositive(
+                    g * X ** 2, -2 * u ** 2 * X, 2 * u ** 2 * Y + g * X ** 2
+                ))
 
                 const minU = Math.sqrt(g * Y + g * Math.sqrt(Y ** 2 + X ** 2))
                 const minUAngle = Math.atan((Y + Math.sqrt(Y ** 2 + X ** 2)) / X)
@@ -242,7 +306,9 @@ function task(number) {
             loadInto(xyGraph,output)
             const graph = document.getElementById("graph")
 
-            const entries = addEntries(["angle", "g", "u", "h"],["inputX","maxX"], inputs, updatePlot)
+            const entries = addEntries(
+                ["angle", "g", "u", "h"],["inputX","maxX"], inputs, updatePlot
+            )
             const angleInput = entries.next().value
             const gInput = entries.next().value
             const uInput = entries.next().value
@@ -289,7 +355,9 @@ function task(number) {
             loadInto(trGraph, output)
             const graph = document.getElementById("graph")
 
-            const entries = addEntries(["g", "u", "h", "angle"], ["turningPoints"], inputs, updatePlot)
+            const entries = addEntries(
+                ["g", "u", "h", "angle"], ["turningPoints"], inputs, updatePlot
+            )
             const gInput = entries.next().value
             const uInput = entries.next().value
             const heightInput = entries.next().value
@@ -319,7 +387,9 @@ function task(number) {
                     points.push([T, Math.sqrt((vx * T) ** 2 + (height + vy * T - 0.5 * g * T ** 2) ** 2)])
                 }
 
-                const Tturning = cubicFormula(g ** 2, -3 * g * vy, 2 * (vx ** 2 + vy ** 2 - g * height), 2 * vy * height)
+                const Tturning = cubicFormula(
+                    g ** 2, -3 * g * vy, 2 * (vx ** 2 + vy ** 2 - g * height), 2 * vy * height
+                )
                 const turningPoints = []
                 let turningPointsInfo = ""
 
@@ -327,15 +397,16 @@ function task(number) {
                     if (complex.a > 0.0001 && complex.b < 0.0001 && complex.b > -0.0001) {
                         const x = vx * complex.a
                         const y = height + vy * complex.a - 0.5 * g * complex.a ** 2
-                        turningPointsInfo += "(" + formatValue(x, 4) + "," + formatValue(y, 4) + ") "
-                        turningPoints.push([complex.a, Math.sqrt(x ** 2 + y ** 2)])
+                        const r = Math.sqrt(x ** 2 + y ** 2)
+                        turningPointsInfo += "(" + formatValue(complex.a, 4) + "," + formatValue(r, 4) + ") "
+                        turningPoints.push([complex.a, r])
                     }
                 })
 
                 if (turningPointsInfo === "") {
                     turningPointsLabel.innerText = "no positive real turning points"
                 } else {
-                    turningPointsLabel.innerText = turningPointsInfo
+                    turningPointsLabel.innerHTML = turningPointsInfo
                 }
 
                 graph.clearLinePlotData()
@@ -358,7 +429,9 @@ function task(number) {
 
             const graph = document.getElementById("graph")
 
-            const entries = addEntries(["g", "u", "h", "angle","N","C","timeStep","fps","resolution"],[], inputs, updatePlot)
+            const entries = addEntries(
+                ["g", "u", "h", "angle","N","C","timeStep","fps","resolution"],[], inputs, updatePlot
+            )
             const gInput = entries.next().value
             const uInput = entries.next().value
             const heightInput = entries.next().value
@@ -487,7 +560,9 @@ function task(number) {
             loadInto(xyGraph,output)
             const graph = document.getElementById("graph")
 
-            const entries = addEntries(["angle", "g", "u", "h","m","Cd","rho","A","timeStep"],["drag","noDrag"], inputs, updatePlot)
+            const entries = addEntries(
+                ["angle", "g", "u", "h","m","Cd","rho","A","timeStep"],["drag","noDrag"], inputs, updatePlot
+            )
 
             const angleInput = entries.next().value
             const gInput = entries.next().value
@@ -561,7 +636,9 @@ function task(number) {
 
             loadInto(boxHTML,output)
 
-            const entries = addEntries(["dimensions","r","l","C","Cd","rho","A","m"],[],inputs,updatePlot)
+            const entries = addEntries(
+                ["dimensions","r","l","C","Cd","rho","A","m"],[],inputs,updatePlot
+            )
 
             inputs.innerHTML += vectorHTML
 
@@ -579,6 +656,21 @@ function task(number) {
             const rhoInput = entries.next().value
             const AInput = entries.next().value
             const mInput = entries.next().value
+
+            let audioActive = false
+            const audioButton = document.createElement("button")
+            audioButton.id = "audioButton"
+            audioButton.className = "navigationButton"
+            audioButton.innerText = "Unmute audio"
+            audioButton.onclick = () => {
+                if (audioActive){
+                    audioActive = false
+                    audioButton.innerText = "Unmute audio"
+                } else {
+                    audioActive = true
+                    audioButton.innerText = "Mute audio"
+                }
+            }
 
             let position = []
             let positionInputs = []
@@ -602,9 +694,6 @@ function task(number) {
             // for sensible estimation of initial delta time
             let previousTime = performance.now()
 
-            // used to cancel animations
-            let currentAnimationFrame
-
             // used to store the current method of displaying our svg
             let getSVGContent
 
@@ -623,7 +712,7 @@ function task(number) {
             }
 
             function getThreeDimensionalSVGContent(){
-                const focalLength = 1+2*r/l
+                const focalLength = 1+r/l
                 const distance = 1
 
                 const scalingDueToDistance = focalLength/(distance+position[2]/l)
@@ -666,9 +755,9 @@ function task(number) {
                 moveProjectileThroughTimePeriod(deltaTime/1000)
 
                 for (let i = 0;i<dimensions;i++){
-                    positionInputs[i].value = formatValue(position[i],4)
-                    velocityInputs[i].value = formatValue(velocity[i],4)
-                    gInputs[i].value = formatValue(g[i],4)
+                    positionInputs[i].value = formatValue(position[i],4,formatExponentWithoutSuperText)
+                    velocityInputs[i].value = formatValue(velocity[i],4,formatExponentWithoutSuperText)
+                    gInputs[i].value = formatValue(g[i],4,formatExponentWithoutSuperText)
                 }
 
                 box.innerHTML = getSVGContent()
@@ -814,7 +903,11 @@ function task(number) {
                     position[dimension] = r
                     if (velocity[dimension] <= -inconsequentialVelocity){
                         velocity[dimension] = -C * (velocity[dimension] + acceleration*t)
+                        if (audioActive){
+                            playBounceSoundEffect(sigmoid(Math.abs(velocity[dimension])))
+                        }
                         moveAlongDimension(dimension,time-t,acceleration)
+
                     } else{
                         velocity[dimension] = 0
                     }
@@ -824,6 +917,9 @@ function task(number) {
 
                     if (velocity[dimension] >= inconsequentialVelocity){
                         velocity[dimension] = -C * (velocity[dimension] + acceleration*t)
+                        if (audioActive) {
+                            playBounceSoundEffect(sigmoid(Math.abs(velocity[dimension])))
+                        }
                         moveAlongDimension(dimension,time-t,acceleration)
                     } else{
                         velocity[dimension] = 0
@@ -864,6 +960,8 @@ function task(number) {
 
             setbuttons()
             document.getElementById("fitButton").remove()
+            document.getElementById("fitButtonContainer").appendChild(audioButton)
+
             break
         }
 
@@ -897,6 +995,10 @@ class loadAnimation{
         this.defaultText = this.element.innerText
     }
 
+}
+
+function loadInto(html, into){
+    into.innerHTML = html
 }
 
 function* addEntries(entries,legends,into,updatePlot){
