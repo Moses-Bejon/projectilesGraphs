@@ -30,6 +30,32 @@ import {
 
 const content = document.getElementById("content")
 
+let popupCreated = false
+function createPopup(html){
+
+    if (popupCreated){
+        return
+    }
+
+    popupCreated = true
+
+    const popup = document.createElement("div")
+    popup.id = "popup"
+    popup.innerHTML = html
+
+    const closingCross = document.createElement("div")
+    closingCross.className = "closingCross"
+    closingCross.innerText = "╳"
+    closingCross.onclick = () => {
+        popupCreated = false
+        popup.remove()
+    }
+
+    popup.appendChild(closingCross)
+
+    document.body.appendChild(popup)
+}
+
 const bounceSounds = [
     new Audio("./assets/bounces/01-bounces.mp3"),
     new Audio("./assets/bounces/02-bounces.mp3"),
@@ -119,7 +145,7 @@ function task(number) {
     const inputs = document.getElementById("inputs")
     const output = document.getElementById("output")
 
-    function setbuttons() {
+    function setbuttons(graph,overview,entries) {
         const fitButton = document.getElementById("fitButton")
         fitButton.onclick = () => {
             graph.updateAxes()
@@ -127,14 +153,39 @@ function task(number) {
 
         const homeButton = document.getElementById("homeButton")
         homeButton.onclick = () => {goToPage(0)}
+
+        const aboutButton = document.getElementById("aboutButton")
+        aboutButton.onclick = () => {
+            let html = `
+            <h2 class="aboutSubtitle">Overview</h2> 
+            <p>${overview}</p>
+            <h2 class="aboutSubtitle">Input descriptions</h2>
+            <ul>
+            `
+            entries.forEach((entry) => {
+                html += `<li>${entryPresets[entry].label}${entryPresets[entry].description}</li>`
+            })
+            html += "</ul>"
+            console.log(entries)
+            createPopup(html)
+        }
     }
     switch (number) {
         case 1: {
             loadInto(xyGraph,output)
             const graph = document.getElementById("graph")
 
+            const overview = `
+            For task 1 I created a graph of x position against y position of a projectile (neglecting drag) using discrete, fixed, time step intervals. 
+            I began by finding the components of the initial velocity using the launch angle. 
+            Since there are no forces acting in the horizontal direction, this velocity will remain constant. 
+            In the y direction, the projectile is accelerating downward at the rate g.
+            As x and y can both be found in terms of time, time in incremented by the time step and x and y are both found and plotted at each time until the projectile collides with the ground.
+            `
+
+            const entryArray = ["angle", "g", "u", "h", "timeStep"]
             const entries = addEntries(
-                ["angle", "g", "u", "h", "timeStep"],[], inputs, updatePlot
+                entryArray,[], inputs, updatePlot
             )
 
             const angleInput = entries.next().value
@@ -173,15 +224,25 @@ function task(number) {
                 graph.plotLine(points, "black")
             }
 
-            setbuttons()
+            setbuttons(graph,overview,entryArray)
             break
         }
         case 2: {
             loadInto(xyGraph,output)
             const graph = document.getElementById("graph")
 
+            const overview = `
+            In task 2, using x and y in terms of t, it is possible to find y in terms of x. 
+            This analytical solution allows you to plot the graph in constant increments of x, which results in constant "smoothness" across the graph.
+            I found the maximum value of x (where y = 0) and then used an x step that was one hundredth of this.
+            This means there are 100 points on the graph and they are all equally spaced.
+            I used this technique for plotting all the analytical graphs throughout this challenge.
+            I was then able to find the apogee (the highest point on the trajectory) by finding the point where the gradient of this graph is equal to zero.
+            `
+
+            const entryArray = ["angle", "g", "u", "h"]
             const entries = addEntries(
-                ["angle", "g", "u", "h"],[], inputs, updatePlot
+                entryArray,[], inputs, updatePlot
             )
 
             const angleInput = entries.next().value
@@ -205,15 +266,31 @@ function task(number) {
                 graph.plotPoint(getTrajectoryApogee(g, u, angle, height), "Apogee")
             }
 
-            setbuttons()
+            setbuttons(graph,overview,entryArray)
             break
         }
         case 3: {
             loadInto(xyGraph,output)
             const graph = document.getElementById("graph")
 
+            const overview = `
+            For task 3, given some point (X,Y), I had to find trajectories that would pass through this point launched from (0,0) with the inputs specified (initial speed etc.).
+            Two such trajectories will exist, one with a greater angle than the other, these are called "high ball" and "low ball" trajectories.
+            There is also a trajectory with the minimum initial speed. This is the minimum launch speed trajectory.
+            Tasks 5 and 6 were both to update task 3.
+            <br>
+            <br>
+            For task 5 I had to find the bounding parabola of all possible points (X, Y) reachable by the given trajectory and the given launch speed as the launch angle varies.
+            This parabola is given in purple.
+            <br>
+            <br>
+            For task 6 I had to find the length along my trajectories (The length of the curved path taken). 
+            These are given in the table as distances in metres and found through integration.
+            `
+
+            const entryArray = ["g", "u", "X", "Y"]
             const entries = addEntries(
-                ["g", "u", "X", "Y"],["minU","highBall","lowBall","maxX"], inputs, updatePlot
+                entryArray,["minU","highBall","lowBall","maxX"], inputs, updatePlot
             )
 
             const gInput = entries.next().value
@@ -299,15 +376,24 @@ function task(number) {
                 graph.plotPoint([X, Y], "Target")
             }
 
-            setbuttons()
+            setbuttons(graph,overview,entryArray)
             break
         }
         case 4: {
             loadInto(xyGraph,output)
             const graph = document.getElementById("graph")
 
+            const overview = `
+            Task 4 was to find the horizontal distance travelled. 
+            This is the positive value of x when y is equal to zero. 
+            It is given in the table.
+            I also had to find the maximum distance possible as the launch angle varies, which was found through differentiation.
+            This is plotted as a separate trajectory.
+            `
+
+            const entryArray = ["angle", "g", "u", "h"]
             const entries = addEntries(
-                ["angle", "g", "u", "h"],["inputX","maxX"], inputs, updatePlot
+                entryArray,["inputX","maxX"], inputs, updatePlot
             )
             const angleInput = entries.next().value
             const gInput = entries.next().value
@@ -348,15 +434,23 @@ function task(number) {
 
             }
 
-            setbuttons()
+            setbuttons(graph,overview,entryArray)
             break
         }
         case 7: {
             loadInto(trGraph, output)
             const graph = document.getElementById("graph")
 
+            const overview = `
+            Task 7 required me to plot the distance (r) from the origin against time as the projectile moved.
+            This was found using the original x/y against time formulae used in task 1, and using these to find the distance of the projectile, at any given time, from the origin.
+            (<span class="noWrap">√<span class="underSquareRoot">x² + y²</span></span>)
+            I then had to find any turning points, which involved differentiating and solving a cubic equation.
+            `
+
+            const entryArray = ["g", "u", "h", "angle"]
             const entries = addEntries(
-                ["g", "u", "h", "angle"], ["turningPoints"], inputs, updatePlot
+                entryArray, ["turningPoints"], inputs, updatePlot
             )
             const gInput = entries.next().value
             const uInput = entries.next().value
@@ -419,7 +513,7 @@ function task(number) {
 
             }
 
-            setbuttons()
+            setbuttons(graph,overview,entryArray)
             break
         }
 
@@ -429,8 +523,17 @@ function task(number) {
 
             const graph = document.getElementById("graph")
 
+            const overview = `
+            For task 8 I incorporated a bounce using a numerical approach. 
+            I used the solutions presented in task 1, but every time y becomes negative, instead of ending the simulation, a bounce is computed.
+            During a bounce, the vertical velocity is flipped and multiplied by the coefficient of restitution.
+            In accordance with the task, I made it a playable animation, which can be watched via the play button.
+            You can also save the animation as an mp4 through the save animation button, and can configure the mp4's resolution and framerate.
+            `
+
+            const entryArray = ["g", "u", "h", "angle","N","C","timeStep","fps","resolution"]
             const entries = addEntries(
-                ["g", "u", "h", "angle","N","C","timeStep","fps","resolution"],[], inputs, updatePlot
+                entryArray,[], inputs, updatePlot
             )
             const gInput = entries.next().value
             const uInput = entries.next().value
@@ -550,7 +653,7 @@ function task(number) {
                 window.alert("Video encoders are not supported by your browser. You cannot save this animation as an mp4.")
             }
 
-            setbuttons()
+            setbuttons(graph,overview,entryArray)
             break
 
         }
@@ -560,8 +663,14 @@ function task(number) {
             loadInto(xyGraph,output)
             const graph = document.getElementById("graph")
 
+            const overview = `
+            For task 9 I used the Verlet method in discrete time steps to take into account air resistance (which is assumed to vary with the square of velocity).
+            This (in red) is compared with the old model without air resistance (in blue).
+            `
+
+            const entryArray = ["angle", "g", "u", "h","m","Cd","rho","A","timeStep"]
             const entries = addEntries(
-                ["angle", "g", "u", "h","m","Cd","rho","A","timeStep"],["drag","noDrag"], inputs, updatePlot
+                entryArray,["drag","noDrag"], inputs, updatePlot
             )
 
             const angleInput = entries.next().value
@@ -627,7 +736,7 @@ function task(number) {
                 graph.plotLine(dragTrajectory,"red")
             }
 
-            setbuttons()
+            setbuttons(graph,overview,entryArray)
             break
         }
 
@@ -636,8 +745,20 @@ function task(number) {
 
             loadInto(boxHTML,output)
 
+            const overview = `
+            For the N-dimensional extension, I noticed that the formula I had used to compute the motion of projectiles in task 9 was entirely in terms of vectors. 
+            This meant it was trivial to write algorithms to compute the positions of particles in any number of dimensions.
+            However, I decided to also incorporate a bounce so as to keep my projectile in a fixed space.
+            I also needed to somehow convey the position of the projectile in a large number of dimensions.
+            As the computer screen is two dimensional, graphically displaying up to two dimensions was trivial.
+            Displaying the third dimension required some perspective and projection but was still a relatively standard procedure.
+            I decided to encode further dimensions in terms of colour. 
+            The less red the room, the closer the ball is to you in the fourth dimension. The less green the room, the closer the ball is to you in the fifth dimension, and so on.
+            `
+
+            const entryArray = ["dimensions","r","l","C","Cd","rho","A","m"]
             const entries = addEntries(
-                ["dimensions","r","l","C","Cd","rho","A","m"],[],inputs,updatePlot
+                entryArray,[],inputs,updatePlot
             )
 
             inputs.innerHTML += vectorHTML
@@ -958,7 +1079,7 @@ function task(number) {
                 }
             }
 
-            setbuttons()
+            setbuttons(document.createElement("graph-component"),overview,entryArray)
             document.getElementById("fitButton").remove()
             document.getElementById("fitButtonContainer").appendChild(audioButton)
 
