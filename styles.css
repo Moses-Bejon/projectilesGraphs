@@ -1,10 +1,51 @@
-/* setting defaults for consistency across web browsers*/
 table,label,input,body,tbody,html,div,p{
     width:100%;
     margin: 0;
     padding: 0;
     border: none;
     overflow-x: hidden;
+}
+
+.noWrap{
+    white-space: nowrap;
+}
+
+.underSquareRoot{
+    text-decoration:overline;
+}
+
+#popup{
+    background-color: white;
+    border: solid black;
+    width: 90%;
+
+    /* Centering the popup */
+    position: fixed;
+    top: 50%;
+    left: 5%;
+    transform: translateY(-50%)
+}
+
+.aboutSubtitle{
+    text-align: center;
+}
+
+ul{
+    margin: 0 0 0 20px;
+    padding: 0;
+}
+
+.closingCross{
+    width: auto;
+    cursor: default;
+    font-weight: bold;
+
+    /*This is because there is an empty bit of space at the top and bottom of this unicode character*/
+    padding: 0 5px;
+
+    position: absolute;
+    right: 0;
+    top: 0;
 }
 
 #title{
