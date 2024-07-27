@@ -1,3 +1,6 @@
+// This is a library file. It is the only code in this repository I did not write myself.
+// This should be relatively clear based on the ".mjs" file extension and the distinct programming style.
+
 var __accessCheck = (obj, member, msg) => {
   if (!member.has(obj))
     throw TypeError("Cannot " + msg);
