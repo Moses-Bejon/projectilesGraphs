@@ -1,22 +1,22 @@
 export const entryPresets= {
-    angle:{name:"angle",label:"Launch angle (º): ",value:"45",min:"1",max:"89",type:"Float"},
-    timeStep:{name:"timeStep",label:"Time step (s): ",value:"0.01",min:"0.001",max:"2",type:"Float"},
-    g:{name:"g",label:"Strength of gravity (ms<sup>-2</sup>): ",value:"9.8",min:"1",max:"100",type:"Float"},
-    u:{name:"u",label:"Launch speed (ms<sup>-1</sup>): ",value:"20",min:"1",max:"100",type:"Float"},
-    h:{name:"h",label:"Height (m): ",value:"5",min:"0",max:"100",type:"Float"},
-    X:{name:"X",label:"Target X (m): ",value:"5",min:"1",max:"100",type:"Float"},
-    Y:{name:"Y",label:"Target Y (m): ",value:"10",min:"1",max:"100",type:"Float"},
-    N:{name:"N",label:"Number of bounces: ",value:"3",min:"0",max:"100",type:"Integer"},
-    C:{name:"C",label:"Coefficient of restitution: ",value:"0.6",min:"0",max:"1",type:"Float"},
-    Cd:{name:"Cd",label:"Drag coefficient: ",value:"0.47",min:"0.01",max:"1.5",type:"Float"},
-    rho:{name:"rho",label:"Air density (Kgm<sup>-3</sup>): ",value:"1",min:"0",max:"10",type:"Float"},
-    A:{name:"A",label:"Cross-section (m<sup>2</sup>): ",value:"0.25",min:"0",max:"10",type:"Float"},
-    m:{name:"m",label:"Mass (Kg): ",value:"1",min:"0.01",max:"50",type:"Float"},
-    fps:{name:"fps",label:"FPS of mp4 (Hz): ",value:"30",min:"0.1",max:"100",type:"Float"},
-    resolution:{name:"resolution",label:"Resolution of mp4: ",value:"500",min:"20",max:"900",type:"Integer"},
-    dimensions:{name:"dimensions",label:"Number of dimensions: ",value:"3",min:"1",max:"6",type:"Integer"},
-    r:{name:"r",label:"Ball radius (m): ",value:"0.1",min:"0.01",max:"5",type:"Float"},
-    l:{name:"l",label:"Side length of box (m): ",value:"10",min:"1",max:"100",type:"Float"}
+    angle:{name:"angle",label:"Launch angle (º): ",value:"45",min:"1",max:"89",type:"Float",description:"The angle above horizontal of the launch direction of the projectile."},
+    timeStep:{name:"timeStep",label:"Time step (s): ",value:"0.01",min:"0.001",max:"2",type:"Float",description:"The time period between each successive sample of the graph."},
+    g:{name:"g",label:"Strength of gravity (ms<sup>-2</sup>): ",value:"9.8",min:"1",max:"100",type:"Float",description:"The acceleration of the projectile downward due to gravity."},
+    u:{name:"u",label:"Launch speed (ms<sup>-1</sup>): ",value:"20",min:"1",max:"100",type:"Float",description:"The speed at which the projectile is launched."},
+    h:{name:"h",label:"Height (m): ",value:"5",min:"0",max:"100",type:"Float",description:"The height at which the projectile is launched from."},
+    X:{name:"X",label:"Target X (m): ",value:"5",min:"1",max:"100",type:"Float",description:"The x position of the point on the graph through which the trajectory moves through."},
+    Y:{name:"Y",label:"Target Y (m): ",value:"10",min:"1",max:"100",type:"Float",description:"The y position of the point on the graph through which the trajectory moves through."},
+    N:{name:"N",label:"Number of bounces: ",value:"3",min:"0",max:"100",type:"Integer",description:"The number of times the projectile bounces before the simulation ends."},
+    C:{name:"C",label:"Coefficient of restitution: ",value:"0.6",min:"0",max:"1",type:"Float",description:"The proportion of velocity that is flipped when the projectile bounces."},
+    Cd:{name:"Cd",label:"Drag coefficient: ",value:"0.47",min:"0.01",max:"1.5",type:"Float",description:"A coefficient that captures how complex factors, like shape and material, affect drag. A larger number results in more drag."},
+    rho:{name:"rho",label:"Air density (Kgm<sup>-3</sup>): ",value:"1",min:"0",max:"10",type:"Float",description:"The amount of matter contained within a unit volume of air."},
+    A:{name:"A",label:"Cross-section (m<sup>2</sup>): ",value:"0.25",min:"0",max:"10",type:"Float",description:"The 2D area of the projectile facing in the direction it is moving."},
+    m:{name:"m",label:"Mass (Kg): ",value:"1",min:"0.01",max:"50",type:"Float",description:"The amount of matter that makes up the projectile."},
+    fps:{name:"fps",label:"FPS of mp4 (Hz): ",value:"30",min:"0.1",max:"100",type:"Float",description:"The number of individual images that are displayed in one second of the exported mp4 video."},
+    resolution:{name:"resolution",label:"Resolution of mp4: ",value:"500",min:"20",max:"900",type:"Integer",description:"The number of pixels on each side of the video (the video is a square so both sides have the same number of pixels)."},
+    dimensions:{name:"dimensions",label:"Number of dimensions: ",value:"3",min:"1",max:"6",type:"Integer",description:"The number of axes through which the projectile can move."},
+    r:{name:"r",label:"Ball radius (m): ",value:"0.1",min:"0.01",max:"5",type:"Float",description:"The distance from the centre to the surface of the projectile."},
+    l:{name:"l",label:"Side length of box (m): ",value:"10",min:"1",max:"100",type:"Float",description:"The length of the side of the box which contains the projectile."}
 }
 
 
@@ -73,6 +73,7 @@ export const taskHTML = `
         <div id="fitButtonContainer">
             <button id="fitButton" class="navigationButton">Fit axes to graph</button>
             <button id="homeButton" class="navigationButton">Home</button>
+            <button id="aboutButton" class="navigationButton">About</button>
         </div>
     </div>
 </div>
