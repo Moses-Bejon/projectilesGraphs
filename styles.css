@@ -1,4 +1,4 @@
-table,label,input,body,tbody,html,div,p{
+label,input,body,tbody,html,div,canvas,p{
     width:100%;
     margin: 0;
     padding: 0;
@@ -20,10 +20,10 @@ table,label,input,body,tbody,html,div,p{
     width: 90%;
 
     /* Centering the popup */
-    position: fixed;
-    top: 50%;
+    position: absolute;
+    top: 5%;
     left: 5%;
-    transform: translateY(-50%)
+    /*transform: translateY(-50%)*/
 }
 
 .aboutSubtitle{
@@ -60,6 +60,7 @@ ul{
 
 .taskPreview{
     border: solid grey;
+    height: 280px;
 }
 
 #table{
@@ -215,6 +216,13 @@ h4{
     border: solid;
     width: 99%;
     aspect-ratio: 1/1;
+}
+
+canvas{
+    cursor: grab;
+}
+canvas:active{
+    cursor: grabbing;
 }
 
 @media (max-width: 800px){
