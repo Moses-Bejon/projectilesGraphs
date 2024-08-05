@@ -8,16 +8,24 @@ import {
     quadraticFormulaPositive,
     quadraticFormulaNegative,
     cubicFormula,
-    sigmoid
+    sigmoid,
+    multiplyMatrices,
+    multiply3x3MatrixWithVector,
+    findInverseOfUnitary3x3Matrix,
 } from "./maths.js"
 
 import {
     getTrajectory,
     getTrajectoryApogee,
     resolution
-} from "./trajectory.js";
+} from "./trajectory.js"
 
 import {
+    equirectangularMap
+} from "./equirectangularMap.js"
+
+import {
+    planets,
     entryPresets,
     legendPresets,
     homeHTML,
@@ -25,8 +33,10 @@ import {
     xyGraph,
     trGraph,
     vectorHTML,
-    inProgress, boxHTML
-} from "./dynamicContent.js";
+    boxHTML,
+    planetDropdown,
+    notableLocations
+} from "./dynamicContent.js"
 
 const content = document.getElementById("content")
 
@@ -76,7 +86,7 @@ let currentAnimationFrame
 function goToPage(page,saveHistory=true){
     cancelAnimationFrame(currentAnimationFrame)
 
-    page = page%11
+    page = page%12
     if (page > 0){
         task(page)
     } else {
@@ -136,6 +146,9 @@ function home() {
     document.getElementById("task10Button").onclick = function () {
         goToPage(10)
     }
+    document.getElementById("task11Button").onclick = function () {
+        goToPage(11)
+    }
 }
 
 function task(number) {
@@ -166,7 +179,6 @@ function task(number) {
                 html += `<li>${entryPresets[entry].label}${entryPresets[entry].description}</li>`
             })
             html += "</ul>"
-            console.log(entries)
             createPopup(html)
         }
     }
@@ -1082,6 +1094,400 @@ function task(number) {
             setbuttons(document.createElement("graph-component"),overview,entryArray)
             document.getElementById("fitButton").remove()
             document.getElementById("fitButtonContainer").appendChild(audioButton)
+
+            break
+        }
+
+        case 11:{
+
+            loadInto(planetDropdown,output)
+            const planetsDropDown = document.getElementById("planetDropdown")
+            planetsDropDown.onchange = () => {
+                loadPlanet(planetsDropDown.value)
+            }
+
+            let notableLocationOptions = []
+            const notableLocationsDropdownLabel = document.createElement("label")
+            notableLocationsDropdownLabel.for = "notableLocationsDropdown"
+            notableLocationsDropdownLabel.innerText = "Launch from:"
+            const notableLocationsDropdown = document.createElement("select")
+            notableLocationsDropdown.id = "notableLocationsDropdown"
+            const noneOption = document.createElement("option")
+            noneOption.innerText = "Given longitude and latitude"
+            noneOption.value = ""
+            notableLocationsDropdown.appendChild(noneOption)
+            output.appendChild(notableLocationsDropdownLabel)
+            output.appendChild(notableLocationsDropdown)
+
+            const screen = document.createElement("canvas")
+            const context = screen.getContext("2d",{willReadFrequently:true,alpha:false})
+            output.appendChild(screen)
+            context.fillStyle = "white"
+            context.fillRect(0,0,screen.width,screen.height)
+
+            const overview = `
+            ADD AN OVERVIEW ASAP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            `
+            const entryArray = ["latitude","longitude","angle","circularAngle","largeU", "largeH","largeTimeStep","d","largeResolution","maxTime","timeSpeed"]
+            const entries = addEntries(entryArray,["earth"],inputs,updatePlot)
+
+            const latitudeInput = entries.next().value
+            const latitudeSlider = document.getElementById("latitudeSlider")
+            const longitudeSlider = document.getElementById("longitudeSlider")
+            const longitudeInput = entries.next().value
+            const angleInput = entries.next().value
+            const circularAngleInput = entries.next().value
+            const uInput = entries.next().value
+            const hInput = entries.next().value
+            const timeStepInput = entries.next().value
+            const dInput = entries.next().value
+            const distanceSlider = document.getElementById("dSlider")
+            const resolutionInput = entries.next().value
+            const maxTimeInput = entries.next().value
+            const timeSpeedInput = entries.next().value
+            const landingLatitudeLabel = entries.next().value
+            const landingLongitudeLabel = entries.next().value
+
+            let consideringPlanetRotation = false
+            const rotateEarthButton = document.createElement("button")
+            rotateEarthButton.className = "navigationButton"
+            rotateEarthButton.innerText = "Consider planet's rotation"
+            rotateEarthButton.onclick = () => {
+                if (consideringPlanetRotation){
+                    rotateEarthButton.innerText = "Consider planet's rotation"
+                    consideringPlanetRotation = false
+                    map.stopConsideringEarthRotation()
+                    updatePlot()
+                } else {
+                    rotateEarthButton.innerText = "Stop considering planet's rotation"
+                    consideringPlanetRotation = true
+                    map.considerEarthRotation()
+                    updatePlot()
+                }
+            }
+
+            const playAnimationButton = document.createElement("button")
+            playAnimationButton.className = "navigationButton"
+            playAnimationButton.innerText = "Play animation"
+            playAnimationButton.onclick = () => {
+                cancelAnimationFrame(currentAnimationFrame)
+                updatePlot()
+                animateTrajectory(structuredClone(unRotatedTrajectory),performance.now(),map.timeStep,map.airTime)
+            }
+
+            let resolution
+            let d
+            let timeSpeed
+            let trajectory
+            let unRotatedTrajectory
+            let map
+            let imageData
+            let dataArray
+            let pixelPositions
+
+            const sensitivity = 0.005
+            const focalLength = 0.1
+            const sensorSize = 0.1
+
+            let overallRotationMatrix = [
+                [1,0,0],
+                [0,1,0],
+                [0,0,1]
+            ]
+            let overallTrajectoryRotationMatrix = structuredClone(overallRotationMatrix)
+
+            loadPlanet("earth")
+
+            function loadPlanet(option){
+                const planet = planets[option]
+
+                const mapPromise = new equirectangularMap(
+                    planet.source,
+                    planet.radius,
+                    planet.mass,
+                    planet.angularSpeed,
+                    consideringPlanetRotation
+                )
+
+                mapPromise.then(mapInstance => {
+                    map = mapInstance
+
+                    const radiusInKm = map.radius/1000
+                    distanceSlider.min = radiusInKm+500
+                    distanceSlider.max = 10*radiusInKm
+                    const defaultValueOfCameraDistance = Math.round(3*radiusInKm/1000)*1000
+                    distanceSlider.value = defaultValueOfCameraDistance
+                    dInput.value = defaultValueOfCameraDistance
+
+                    notableLocationOptions.forEach((notableLocationOption) => notableLocationOption.remove())
+                    notableLocationOptions = []
+                    for (const notableLocation in notableLocations[option]){
+                        const notableLocationOption = document.createElement("option")
+                        notableLocationOption.value = notableLocationOption.innerText = notableLocation
+                        notableLocationsDropdown.appendChild(notableLocationOption)
+                        notableLocationOptions.push(notableLocationOption)
+                    }
+                    notableLocationsDropdown.onchange = () => {
+                        if (notableLocationsDropdown.value) {
+                            const location = notableLocations[option][notableLocationsDropdown.value]
+                            const latitude = parseFloat(location.latitude)
+                            const longitude = parseFloat(location.longitude)
+
+                            latitudeSlider.value = latitude
+                            latitudeInput.value = latitude
+                            longitudeSlider.value = longitude
+                            longitudeInput.value = longitude
+
+                            updatePlot()
+                        }
+                    }
+
+                    updatePlot()
+                }).catch(error => {
+                    console.log(error)
+                })
+            }
+
+            function updatePlot(){
+                cancelAnimationFrame(currentAnimationFrame)
+
+                resolution = parseInt(resolutionInput.value)
+                d = parseInt(dInput.value)*1000
+                timeSpeed = parseInt(timeSpeedInput.value)
+
+                const latitude = toRadians(parseFloat(latitudeInput.value))
+                const longitude = toRadians(parseFloat(longitudeInput.value))
+                const angle = toRadians(parseFloat(angleInput.value))
+                const circularAngle = toRadians(parseFloat(circularAngleInput.value))
+                const u = parseFloat(uInput.value)*1000
+                const h = parseFloat(hInput.value)*1000
+                const timeStep = parseFloat(timeStepInput.value)
+                const maxTime = parseInt(maxTimeInput.value)
+
+                screen.width = resolution
+                screen.height = resolution
+
+                context.fillStyle = "white"
+                context.fillRect(0,0,resolution,resolution)
+
+                pixelPositions = map.getCameraPixelPositions(d,focalLength,sensorSize,resolution)
+
+                imageData = context.getImageData(0,0,resolution,resolution)
+                dataArray = imageData.data
+
+                unRotatedTrajectory = map.getTrajectory(latitude,longitude,angle,circularAngle,u,h,timeStep,maxTime)
+                trajectory = new Array(unRotatedTrajectory.length)
+
+                transformPixelPositionsByMatrix(overallRotationMatrix)
+                transformTrajectoryByMatrix(overallTrajectoryRotationMatrix)
+
+                updateGlobePixels()
+
+                drawTrajectory()
+
+                const landed = map.landed
+                if (landed){
+                    landingLatitudeLabel.innerHTML = toDegrees(landed.latitude).toFixed(2) + "º"
+                    landingLongitudeLabel.innerHTML = toDegrees(landed.longitude).toFixed(2) + "º"
+                } else {
+                    landingLatitudeLabel.innerText = "Didn't land"
+                    landingLongitudeLabel.innerText = "Didn't land"
+                }
+            }
+
+            function updateGlobePixels(){
+                for (let i = 0;i<resolution;i++){
+                    for (let j = 0;j<resolution;j++){
+
+                        const pixelPosition = pixelPositions[i][j]
+                        const beginAt = 4 * (i * resolution + j)
+
+                        if (pixelPosition) {
+
+                            const pixel = map.getPixel(pixelPosition[0],pixelPosition[1],pixelPosition[2])
+
+                            dataArray[beginAt] = pixel[0]
+                            dataArray[beginAt + 1] = pixel[1]
+                            dataArray[beginAt + 2] = pixel[2]
+                        }
+                    }
+                }
+
+                context.putImageData(imageData,0,0)
+            }
+
+            function drawTrajectory(){
+
+                let visible = false
+
+                context.beginPath()
+
+                for (let i = 0; i<unRotatedTrajectory.length;i++){
+                    const point = map.projectPoint(trajectory[i],d,focalLength,sensorSize,resolution)
+
+                    if (point) {
+                        if (visible) {
+                            context.lineTo(point[0], point[1])
+                        } else {
+                            context.moveTo(point[0], point[1])
+                        }
+                        visible = true
+                    } else {
+                        visible = false
+                    }
+                }
+
+                context.lineWidth = resolution/300
+                context.strokeStyle = "red"
+                context.stroke()
+            }
+
+            // This function has looooooooots of room for optimisation, will do if causes problems
+            function animateTrajectory(fullTrajectory,timeBegan,timeStep,timeLength){
+                const time = timeSpeed*(performance.now()-timeBegan)/1000
+
+                if (time > timeLength){
+                    updatePlot()
+                    return
+                }
+
+                map.setCurrentTime(time)
+
+                const frame = time/timeStep << 0
+                const subFrame = (time%timeStep)/timeStep
+
+                unRotatedTrajectory = fullTrajectory.slice(0,frame+1)
+
+                const currentPoint = fullTrajectory[frame]
+                const nextPoint = fullTrajectory[frame+1]
+
+                unRotatedTrajectory.push(
+                    [
+                        currentPoint[0]+subFrame*(nextPoint[0]-currentPoint[0]),
+                        currentPoint[1]+subFrame*(nextPoint[1]-currentPoint[1]),
+                        currentPoint[2]+subFrame*(nextPoint[2]-currentPoint[2])
+                    ]
+                )
+
+                trajectory = new Array(unRotatedTrajectory.length)
+
+                transformTrajectoryByMatrix(overallTrajectoryRotationMatrix)
+
+                console.log(trajectory)
+
+                updateGlobePixels()
+                drawTrajectory()
+
+                currentAnimationFrame = requestAnimationFrame(() => animateTrajectory(fullTrajectory,timeBegan,timeStep,timeLength))
+            }
+
+            function transformPixelPositionsByMatrix(matrix){
+                for (let i = 0;i<resolution;i++) {
+                    for (let j = 0; j < resolution; j++) {
+                        const pixelPosition = pixelPositions[i][j]
+
+                        if (pixelPosition) {
+                            pixelPositions[i][j] = multiply3x3MatrixWithVector(matrix,pixelPosition)
+                        }
+                    }
+                }
+            }
+
+            function transformTrajectoryByMatrix(matrix){
+                for (let i = 0; i<unRotatedTrajectory.length; i++){
+                    trajectory[i] = multiply3x3MatrixWithVector(matrix,unRotatedTrajectory[i])
+                }
+            }
+
+            output.addEventListener("mousedown", (mouseEvent) => {
+
+                const initialx = mouseEvent.clientX
+                const initialy = mouseEvent.clientY
+
+                let rotationMatrix
+                let inverseRotationMatrix = [
+                    [1,0,0],
+                    [0,1,0],
+                    [0,0,1]
+                ]
+
+                //let timeDoingMatrixStuff = 0
+                //let timeDoingPixelStuff = 0
+                //let numberOfStuff = 0
+
+                function handleMouseMoveRotation(mouseEvent){
+                    const z = initialx-mouseEvent.clientX
+                    const y = initialy-mouseEvent.clientY
+
+                    const magnitude = (y**2+z**2)**0.5
+
+                    if (magnitude === 0){
+                        return
+                    }
+
+                    const u = multiply3x3MatrixWithVector(overallRotationMatrix,[0,y/magnitude,z/magnitude])
+                    const ux = u[0]
+                    const uy = u[1]
+                    const uz = u[2]
+
+                    const angle = magnitude*sensitivity
+
+                    const sine = Math.sin(angle)
+                    const cosine = Math.cos(angle)
+                    const oneMinusCosine = 1-cosine
+                    rotationMatrix = [
+                        [ux**2*oneMinusCosine+cosine,ux*uy*oneMinusCosine-uz*sine,ux*uz*oneMinusCosine+uy*sine],
+                        [ux*uy*oneMinusCosine+uz*sine,cosine+uy**2*oneMinusCosine,uy*uz*oneMinusCosine-ux*sine],
+                        [ux*uz*oneMinusCosine-uy*sine,uz*uy*oneMinusCosine+ux*sine,cosine+uz**2*oneMinusCosine]
+                    ]
+
+                    overallTrajectoryRotationMatrix = findInverseOfUnitary3x3Matrix(multiplyMatrices(rotationMatrix,overallRotationMatrix))
+
+                    // const beforeMatrixMultiplication = performance.now()
+
+                    transformPixelPositionsByMatrix(multiplyMatrices(rotationMatrix,inverseRotationMatrix))
+                    transformTrajectoryByMatrix(overallTrajectoryRotationMatrix)
+
+                    //timeDoingMatrixStuff += performance.now()-beforeMatrixMultiplication
+
+                    inverseRotationMatrix = findInverseOfUnitary3x3Matrix(rotationMatrix)
+
+                    //const beforePixelStuff = performance.now()
+
+                    updateGlobePixels()
+
+                    drawTrajectory()
+
+                    //timeDoingPixelStuff += performance.now()-beforePixelStuff
+
+                    //numberOfStuff ++
+                    //console.log(timeDoingMatrixStuff/numberOfStuff,timeDoingPixelStuff/numberOfStuff)
+
+                }
+
+                function stopRotation(){
+
+                    if (typeof rotationMatrix !== "undefined"){
+                        overallRotationMatrix = multiplyMatrices(rotationMatrix,overallRotationMatrix)
+                        overallTrajectoryRotationMatrix = findInverseOfUnitary3x3Matrix(overallRotationMatrix)
+                    }
+                    output.removeEventListener("mousemove",handleMouseMoveRotation)
+                    document.removeEventListener("mouseup",stopRotation)
+                    document.removeEventListener("visibilitychange",stopRotation)
+                }
+
+                output.addEventListener("mousemove",handleMouseMoveRotation)
+
+                document.addEventListener("mouseup",stopRotation)
+
+                document.addEventListener("visibilitychange",stopRotation)
+            })
+
+            setbuttons(document.createElement("graph-component"),overview,entryArray)
+            const buttonContainer = document.getElementById("fitButtonContainer")
+            buttonContainer.appendChild(rotateEarthButton)
+            buttonContainer.appendChild(playAnimationButton)
+            document.getElementById("fitButton").remove()
 
             break
         }
