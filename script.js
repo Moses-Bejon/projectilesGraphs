@@ -1153,10 +1153,10 @@ function task(number) {
             Provided is a ray casted image of a planet, made using an equirectangular projection of the planet, along with a trajectory of 3D projected points. The image can be rotated by clicking and dragging.
             The model uses Newton's law of universal gravitation numerically to find the path of a trajectory using the inputs.
             You are able to select which celestial body and location you would like to launch from. This can be done by using the dropdowns above the render.
-            If you select custom planet, this allows you to set the planet's properties like mass and rotational speed.
+            If you select custom planet, this allows you to set the planet's properties like mass and speed of rotation.
             The buttons allow you to turn on/off planet rotation (as separate from the projectile's velocity) and play the animation of the projectile reaching its destination.
             `
-
+            
             const entryArray = ["latitude","longitude","angle","circularAngle","largeU", "largeH","largeTimeStep","d","largeResolution","maxTime","timeSpeed"]
             const entries = addEntries(entryArray,["earth"],inputs,updatePlot)
 
