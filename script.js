@@ -1109,7 +1109,7 @@ function task(number) {
             let notableLocationOptions = []
             const notableLocationsDropdownLabel = document.createElement("label")
             notableLocationsDropdownLabel.for = "notableLocationsDropdown"
-            notableLocationsDropdownLabel.innerText = "Launch from:"
+            notableLocationsDropdownLabel.innerText = "Launch from: "
             const notableLocationsDropdown = document.createElement("select")
             notableLocationsDropdown.id = "notableLocationsDropdown"
             const noneOption = document.createElement("option")
@@ -1196,6 +1196,8 @@ function task(number) {
             ]
             let overallTrajectoryRotationMatrix = structuredClone(overallRotationMatrix)
 
+            let customPlanetInputs = []
+
             loadPlanet("earth")
 
             function loadPlanet(option){
@@ -1240,6 +1242,35 @@ function task(number) {
 
                             updatePlot()
                         }
+                    }
+
+                    if (option === "custom"){
+                        customPlanetInputs = []
+
+                        customPlanetInputs.push(
+                            addEntry("r","Planet radius (km): ",inputs,6000,1000,50000,1,true)
+                        )
+                        customPlanetInputs.push(
+                            addEntry("m", "Planet mass (Yg): ",inputs,6,0.1,500,0.001,true)
+                        )
+                        customPlanetInputs.push(
+                            addEntry("angularSpeed","Planet angular speed (rad/μs): ",inputs,70,0,10000,1,true)
+                        )
+
+                        const radiusInput = connectToEntry("r",updatePlanet)
+                        const massInput = connectToEntry("m",updatePlanet)
+                        const angularSpeedInput = connectToEntry("angularSpeed",updatePlanet)
+
+                        function updatePlanet(){
+                            map.radius = parseInt(radiusInput.value)*1000
+                            map.setMass(parseFloat(massInput.value)*1e24)
+                            map.angularSpeed = parseInt(angularSpeedInput.value)*1e-6
+
+                            updatePlot()
+                        }
+
+                    } else {
+                        customPlanetInputs.forEach((customPlanetInput) => customPlanetInput.remove())
                     }
 
                     updatePlot()
@@ -1570,7 +1601,7 @@ function addLegend(label,infoBefores,infos,infoAfters,colour,into){
     into.innerHTML += html
 }
 
-function addEntry(name, label, into, value=5, min=1, max=100, step = 0.001) {
+function addEntry(name, label, into, value=5, min=1, max=100, step = 0.001,insertBefore = false) {
 
     const entry = document.createElement("div")
     entry.className = "entry"
@@ -1580,7 +1611,13 @@ function addEntry(name, label, into, value=5, min=1, max=100, step = 0.001) {
     <input id="${name}Slider" class="slider" type="range" name="${name}" min="${min}" max="${max}" value="${value}" step="${step}">
     `
 
-    into.appendChild(entry)
+    if (insertBefore){
+        into.prepend(entry)
+    } else {
+        into.appendChild(entry)
+    }
+
+    return entry
 }
 
 function connectToEntry(name,updatePlot){
