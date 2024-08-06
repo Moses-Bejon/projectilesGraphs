@@ -56,6 +56,7 @@ export const legendPresets = {
 }
 
 export const homeHTML = `
+<div id="homeContainer">
 <div class="taskContainer" id="task1Button">
     <img class="taskPreview" src = "assets/taskPreviews/task1Preview.svg" alt="Preview image of task 1">
     <button class="taskButton">Task 1</button>
@@ -91,6 +92,11 @@ export const homeHTML = `
 <div class="taskContainer" id="task11Button">
     <img class="taskPreview" src = "assets/taskPreviews/task11Preview.png" alt="Preview image of my projectile launched from earth extension">
     <button class="taskButton">Projectile launched from earth extension</button>
+</div>
+<div class="taskContainer" id="attributions">
+    <img class="taskPreview" src = "assets/taskPreviews/attributionIcon.svg" alt="Preview image of my attribution page">
+    <button class="taskButton">Attributions</button>
+</div>
 </div>
 `
 export const taskHTML = `
@@ -158,6 +164,29 @@ export const trGraph = `
 
 export const inProgress = `
 This feature/page is currently under construction
+`
+
+export const attributionsHTML = `
+<h1>Attributions</h1>
+<h2>Libraries</h2>
+<ol>
+    <li><a href="https://github.com/Vanilagy/mp4-muxer">mp4-muxer</a> by Vanilagy - Multiplexes the mp4 video produced in task 8 - Used under the <a href="https://opensource.org/license/mit">MIT License</a></li>
+</ol>
+<h2>Audio assets</h2>
+<ol>
+    <li><a href="https://freesound.org/s/125154/">Bounce sound</a> by alienistcog - Source of the audio heard in the N-dimensional projectile extension - Used under the <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0 universal deed</a></li>
+</ol>
+<h2>Graphical assets</h2>
+<ol>
+    <li><a href="https://www.solarsystemscope.com/textures/">Planet textures</a> by INOVE - Used to texture the planets seen in the projectile launched from earth extension - Used under the <a href="https://creativecommons.org/licenses/by/4.0/">Attribution 4.0 international deed</a></li>
+    <li><a href="https://thenounproject.com/icon/projectile-4311335/">Projectile icon</a> by Adrien Coquet - Used as webpage favicon and is in the webpage banner - Used under the <a href="https://creativecommons.org/licenses/by/3.0/deed.en">Attribution 3.0 unported deed</a></li>
+    <li><a href="https://thenounproject.com/icon/left-bracket-342654/">Left bracket</a> by Icon Island - Used to form the vector notation seen in the N-dimensional projectile extension - Used under the <a href="https://creativecommons.org/licenses/by/3.0/deed.en">Attribution 3.0 unported deed</a></li>
+    <li><a href="https://thenounproject.com/icon/attribution-6854685/">Attribution icon</a> by Iconic Creations - Used as a preview for the attributions page on the home page - Used under the <a href="https://creativecommons.org/licenses/by/3.0/deed.en">Attribution 3.0 unported deed</a></li>
+</ol>
+<h2>Data</h2>
+<ol>
+    <li><a href="https://simplemaps.com/data/world-cities">City data</a> by simplemaps - Provided the geographic coordinates for notable locations on earth in the projectile launched from earth extension - Used under the <a href="https://creativecommons.org/licenses/by/4.0/">Attribution 4.0 international deed</a></li>
+</ol>
 `
 
 export const notableLocations = {
