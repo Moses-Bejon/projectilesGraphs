@@ -7,7 +7,8 @@ export const planets = {
     neptune:{source:"./assets/maps/2k_neptune.jpg",radius:24622000,mass:1.02409e26,angularSpeed:0.0001083},
     sun:{source:"./assets/maps/2k_sun.jpg",radius:6.957e8,mass:1.9885e30,angularSpeed:0.000002903},
     uranus:{source:"./assets/maps/2k_uranus.jpg",radius:25362000,mass:8.681e25,angularSpeed:0.0001012},
-    venus:{source:"./assets/maps/2k_venus.jpg",radius:6051800,mass:4.8675e24,angularSpeed:2.99239874e-7}
+    venus:{source:"./assets/maps/2k_venus.jpg",radius:6051800,mass:4.8675e24,angularSpeed:2.99239874e-7},
+    custom:{source:"./assets/maps/2k_custom.jpg",radius:6000000, mass:6e24, angularSpeed:7e-5}
 }
 
 export const entryPresets= {
@@ -138,6 +139,7 @@ export const planetDropdown = `
     <option value="sun">Sun</option>
     <option value="uranus">Uranus</option>
     <option value="venus">Venus</option>
+    <option value="custom">Custom</option>
 </select>
 `
 
@@ -167,5 +169,6 @@ export const notableLocations = {
     "neptune": {"Great Dark Spot": {"latitude": -15.5,"longitude": 17}},
     "sun": {},
     "uranus": {},
-    "venus": {"Alpha Regio":{"latitude": -22,"longitude": 5},"Aphrodite Terra":{"latitude":-10,"longitude": 100},"Beta Regio":{"latitude": 25.3,"longitude": 282.8},"Ishtar Terra": {"latitude": 70.4,"longitude": 27.5},"Maat Mons":{"latitude": 0.5,"longitude": 194.6},"Maxwell Montes": {"latitude": 65.2,"longitude": 3.3},"Ovda Regio": {"latitude": 12.5,"longitude": 80}}
+    "venus": {"Alpha Regio":{"latitude": -22,"longitude": 5},"Aphrodite Terra":{"latitude":-10,"longitude": 100},"Beta Regio":{"latitude": 25.3,"longitude": 282.8},"Ishtar Terra": {"latitude": 70.4,"longitude": 27.5},"Maat Mons":{"latitude": 0.5,"longitude": 194.6},"Maxwell Montes": {"latitude": 65.2,"longitude": 3.3},"Ovda Regio": {"latitude": 12.5,"longitude": 80}},
+    "custom": {}
 }
