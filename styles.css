@@ -61,6 +61,7 @@ ul{
 .taskPreview{
     border: solid grey;
     height: 280px;
+    width: 277px;
 }
 
 #table{
