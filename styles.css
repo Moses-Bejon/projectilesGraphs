@@ -53,7 +53,7 @@ ul{
     justify-content: center;
 }
 
-#content{
+#homeContainer{
     display: flex;
     flex-wrap: wrap;
 }
@@ -225,6 +225,7 @@ canvas{
 canvas:active{
     cursor: grabbing;
 }
+
 
 @media (max-width: 800px){
     #graph,.outputContainer{
