@@ -5,9 +5,8 @@ export class equirectangularMap{
         this.twoPI = Math.PI*2
         this.halfPI = Math.PI/2
 
+        this.setMass(planetMass)
         this.radius = planetRadius
-        this.mass = planetMass
-        this.GtimesMass = G*this.mass
         this.angularSpeed = angularSpeed
         this.currentRotation = 0
         this.consideringRotation = consideringRotation
@@ -33,6 +32,11 @@ export class equirectangularMap{
                 reject(error)
             }
         })
+    }
+
+    setMass(mass){
+        this.mass = mass
+        this.GtimesMass = G*this.mass
     }
 
     considerEarthRotation(){
@@ -134,9 +138,17 @@ export class equirectangularMap{
                     this.setCurrentTime(totalTime)
                 }
 
+                let longitude = (Math.atan2(position[1],position[0])-this.currentRotation)%this.twoPI
+
+                if (longitude > Math.PI){
+                    longitude = longitude - this.twoPI
+                } else if (longitude < -Math.PI){
+                    longitude = longitude + this.twoPI
+                }
+
                 this.landed = {
                     latitude:Math.atan2(position[2],(position[0]**2+position[1]**2)**0.5),
-                    longitude:Math.atan2(position[1],position[0])-this.currentRotation
+                    longitude: longitude
                 }
                 break
             }
