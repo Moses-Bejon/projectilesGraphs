@@ -12,6 +12,7 @@ import {
     multiplyMatrices,
     multiply3x3MatrixWithVector,
     findInverseOfUnitary3x3Matrix,
+    getDeterminantOf3x3Matrix
 } from "./maths.js"
 
 import {
@@ -1494,18 +1495,28 @@ function task(number) {
                     const z = initialx-mouseEvent.clientX
                     const y = initialy-mouseEvent.clientY
 
-                    const magnitude = (y**2+z**2)**0.5
+                    const screenVectorMagnitude = (y**2+z**2)**0.5
 
-                    if (magnitude === 0){
+                    if (screenVectorMagnitude === 0){
                         return
                     }
 
-                    const u = multiply3x3MatrixWithVector(overallRotationMatrix,[0,y/magnitude,z/magnitude])
-                    const ux = u[0]
-                    const uy = u[1]
-                    const uz = u[2]
+                    const u = multiply3x3MatrixWithVector(overallRotationMatrix,[0,y,z])
 
-                    const angle = magnitude*sensitivity
+                    // the vector u must be unitary, as this is how the general rotation matrix is defined.
+                    // Previously I ensured this by making the screen vector unitary under the assumption the overall
+                    // rotation vector was unitary. However, floating point errors caused the overall rotation matrix
+                    // to gradually become less unitary over time, causing the interactive map to break.
+                    // By instead ensuring the axis of rotation vector is unitary, since everything from this point
+                    // forward is calculated based on it, we can avoid this bug.
+                    
+                    const axisOfRotationVectorMagnitude = (u[0]**2+u[1]**2+u[2]**2)**0.5
+
+                    const ux = u[0]/axisOfRotationVectorMagnitude
+                    const uy = u[1]/axisOfRotationVectorMagnitude
+                    const uz = u[2]/axisOfRotationVectorMagnitude
+                    
+                    const angle = screenVectorMagnitude*sensitivity
 
                     const sine = Math.sin(angle)
                     const cosine = Math.cos(angle)
@@ -1519,7 +1530,7 @@ function task(number) {
                     overallTrajectoryRotationMatrix = findInverseOfUnitary3x3Matrix(multiplyMatrices(rotationMatrix,overallRotationMatrix))
 
                     // const beforeMatrixMultiplication = performance.now()
-
+                    
                     transformPixelPositionsByMatrix(multiplyMatrices(rotationMatrix,inverseRotationMatrix))
                     transformTrajectoryByMatrix(overallTrajectoryRotationMatrix)
 
