@@ -1449,9 +1449,7 @@ function task(number) {
                 trajectory = new Array(unRotatedTrajectory.length)
 
                 transformTrajectoryByMatrix(overallTrajectoryRotationMatrix)
-
-                console.log(trajectory)
-
+                
                 updateGlobePixels()
                 drawTrajectory()
 
@@ -1476,10 +1474,9 @@ function task(number) {
                 }
             }
 
-            output.addEventListener("mousedown", (mouseEvent) => {
-
-                const initialx = mouseEvent.clientX
-                const initialy = mouseEvent.clientY
+            output.addEventListener("pointerdown", (pointerEvent) => {
+                const initialx = pointerEvent.clientX
+                const initialy = pointerEvent.clientY
 
                 let rotationMatrix
                 let inverseRotationMatrix = [
@@ -1492,9 +1489,9 @@ function task(number) {
                 //let timeDoingPixelStuff = 0
                 //let numberOfStuff = 0
 
-                function handleMouseMoveRotation(mouseEvent){
-                    const z = initialx-mouseEvent.clientX
-                    const y = initialy-mouseEvent.clientY
+                function handlePointerMoveRotation(pointerEvent){
+                    const z = initialx-pointerEvent.clientX
+                    const y = initialy-pointerEvent.clientY
 
                     const magnitude = (y**2+z**2)**0.5
 
@@ -1548,14 +1545,14 @@ function task(number) {
                         overallRotationMatrix = multiplyMatrices(rotationMatrix,overallRotationMatrix)
                         overallTrajectoryRotationMatrix = findInverseOfUnitary3x3Matrix(overallRotationMatrix)
                     }
-                    output.removeEventListener("mousemove",handleMouseMoveRotation)
-                    document.removeEventListener("mouseup",stopRotation)
+                    output.removeEventListener("pointermove",handlePointerMoveRotation)
+                    document.removeEventListener("pointerup",stopRotation)
                     document.removeEventListener("visibilitychange",stopRotation)
                 }
 
-                output.addEventListener("mousemove",handleMouseMoveRotation)
+                output.addEventListener("pointermove",handlePointerMoveRotation)
 
-                document.addEventListener("mouseup",stopRotation)
+                document.addEventListener("pointerup",stopRotation)
 
                 document.addEventListener("visibilitychange",stopRotation)
             })
