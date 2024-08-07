@@ -173,6 +173,8 @@ function attributions(){
     currentPage = 12
 
     loadInto(attributionsHTML,content)
+
+    document.getElementById("homeButton").onclick = () => {goToPage(0)}
 }
 
 function task(number) {
@@ -1156,7 +1158,7 @@ function task(number) {
             If you select custom planet, this allows you to set the planet's properties like mass and speed of rotation.
             The buttons allow you to turn on/off planet rotation (as separate from the projectile's velocity) and play the animation of the projectile reaching its destination.
             `
-            
+
             const entryArray = ["latitude","longitude","angle","circularAngle","largeU", "largeH","largeTimeStep","d","largeResolution","maxTime","timeSpeed"]
             const entries = addEntries(entryArray,["earth"],inputs,updatePlot)
 
