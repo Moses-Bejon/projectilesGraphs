@@ -93,7 +93,11 @@ export const homeHTML = `
     <img class="taskPreview" src = "assets/taskPreviews/task11Preview.png" alt="Preview image of my projectile launched from earth extension">
     <button class="taskButton">Projectile launched from earth extension</button>
 </div>
-<div class="taskContainer" id="attributions">
+<div class="taskContainer" id="writeupButton">
+    <img class="taskPreview" src = "assets/taskPreviews/reportIcon.svg" alt="Preview image of my technical report page">
+    <button class="taskButton">An explanation of my approach to the project</button>
+</div>
+<div class="taskContainer" id="attributionsButton">
     <img class="taskPreview" src = "assets/taskPreviews/attributionIcon.svg" alt="Preview image of my attribution page">
     <button class="taskButton">Attributions</button>
 </div>
@@ -182,11 +186,17 @@ export const attributionsHTML = `
     <li><a href="https://thenounproject.com/icon/projectile-4311335/">Projectile icon</a> by Adrien Coquet - Used as webpage favicon and is in the webpage banner - Used under the <a href="https://creativecommons.org/licenses/by/3.0/deed.en">Attribution 3.0 unported deed</a></li>
     <li><a href="https://thenounproject.com/icon/left-bracket-342654/">Left bracket</a> by Icon Island - Used to form the vector notation seen in the N-dimensional projectile extension - Used under the <a href="https://creativecommons.org/licenses/by/3.0/deed.en">Attribution 3.0 unported deed</a></li>
     <li><a href="https://thenounproject.com/icon/attribution-6854685/">Attribution icon</a> by Iconic Creations - Used as a preview for the attributions page on the home page - Used under the <a href="https://creativecommons.org/licenses/by/3.0/deed.en">Attribution 3.0 unported deed</a></li>
+    <li><a href="https://thenounproject.com/icon/report-6988428/">Report icon</a> by Putri Creative - Used as a preview for the technical report page on the home page - Used under the <a href="https://creativecommons.org/licenses/by/3.0/deed.en">Attribution 3.0 unported deed</a></li>
 </ol>
 <h2>Data</h2>
 <ol>
     <li><a href="https://simplemaps.com/data/world-cities">City data</a> by simplemaps - Provided the geographic coordinates for notable locations on earth in the projectile launched from earth extension - Used under the <a href="https://creativecommons.org/licenses/by/4.0/">Attribution 4.0 international deed</a></li>
 </ol>
+<center><button id="homeButton" class="navigationButton">Home</button></center>
+`
+
+export const writeupHTML = `
+<iframe title="PDF detailing how I built the project" src="assets/report.pdf"></iframe>
 <center><button id="homeButton" class="navigationButton">Home</button></center>
 `
 
