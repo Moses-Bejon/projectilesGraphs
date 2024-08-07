@@ -187,6 +187,7 @@ export const attributionsHTML = `
 <ol>
     <li><a href="https://simplemaps.com/data/world-cities">City data</a> by simplemaps - Provided the geographic coordinates for notable locations on earth in the projectile launched from earth extension - Used under the <a href="https://creativecommons.org/licenses/by/4.0/">Attribution 4.0 international deed</a></li>
 </ol>
+<center><button id="homeButton" class="navigationButton">Home</button></center>
 `
 
 export const notableLocations = {
