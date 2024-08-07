@@ -226,6 +226,10 @@ canvas:active{
     cursor: grabbing;
 }
 
+iframe{
+    height: calc(100vh - 80px);
+    width: 100%;
+}
 
 @media (max-width: 800px){
     #graph,.outputContainer{
