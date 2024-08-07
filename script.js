@@ -11,8 +11,7 @@ import {
     sigmoid,
     multiplyMatrices,
     multiply3x3MatrixWithVector,
-    findInverseOfUnitary3x3Matrix,
-    getDeterminantOf3x3Matrix
+    findInverseOfUnitary3x3Matrix
 } from "./maths.js"
 
 import {
