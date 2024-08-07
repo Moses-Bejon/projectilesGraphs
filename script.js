@@ -36,7 +36,8 @@ import {
     boxHTML,
     planetDropdown,
     notableLocations,
-    attributionsHTML
+    attributionsHTML,
+    writeupHTML
 } from "./dynamicContent.js"
 
 const content = document.getElementById("content")
@@ -87,7 +88,7 @@ let currentAnimationFrame
 function goToPage(page,saveHistory=true){
     cancelAnimationFrame(currentAnimationFrame)
 
-    page = page%13
+    page = page%14
 
     switch (page){
         case 0:{
@@ -95,6 +96,10 @@ function goToPage(page,saveHistory=true){
             break
         }
         case 12:{
+            writeup()
+            break
+        }
+        case 13:{
             attributions()
             break
         }
@@ -164,13 +169,23 @@ function home() {
     document.getElementById("task11Button").onclick = function () {
         goToPage(11)
     }
-    document.getElementById("attributions").onclick = function (){
+    document.getElementById("writeupButton").onclick = function () {
         goToPage(12)
+    }
+    document.getElementById("attributionsButton").onclick = function (){
+        goToPage(13)
     }
 }
 
-function attributions(){
+function writeup(){
     currentPage = 12
+
+    loadInto(writeupHTML,content)
+
+    document.getElementById("homeButton").onclick = () => {goToPage(0)}
+}
+function attributions(){
+    currentPage = 13
 
     loadInto(attributionsHTML,content)
 
